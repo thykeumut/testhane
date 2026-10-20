@@ -1,0 +1,15 @@
+{
+  "name": "TESTHANE — kendini ölç",
+  "short_name": "TESTHANE",
+  "description": "Kişilik testleri, bilgi yarışmaları ve mantık soruları. Çöz, sonucunu gör, kartını indir ve arkadaşlarına gönder.",
+  "lang": "tr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f3eee4",
+  "theme_color": "#f3eee4",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
