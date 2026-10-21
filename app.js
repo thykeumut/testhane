@@ -1572,12 +1572,10 @@
       <section class="intro">
         <a class="link-back" href="#/">← tüm testler</a>
         <div class="intro-card profile-card">
+          <p class="kicker">kişi profili · tahtadan canlı veri</p>
           <div class="profile-hero">
             ${av("lg")}
-            <div>
-              <p class="kicker">kişi profili · tahtadan canlı veri</p>
-              <h1>${esc(name)}</h1>
-            </div>
+            <h1>${esc(name)}</h1>
           </div>
           <div class="stat-tiles" id="profileStats"></div>
           <ul class="tahta attempts" id="profileRows"><li class="tahta-empty">yükleniyor…</li></ul>
@@ -1621,10 +1619,12 @@
           <li class="attempt">
             <div class="attempt-head">
               <b><a href="#/test/${esc(e.t)}">${esc(e.ti || e.t)}</a></b>
-              <span>${esc(e.r || "")}</span>
               <i>${[score, relDate(e.at)].filter(Boolean).join(" · ")}</i>
             </div>
-            ${picks}
+            <div class="attempt-sub">
+              <span>${esc(e.r || "")}</span>
+              ${picks}
+            </div>
           </li>`;
       }).join("");
     });

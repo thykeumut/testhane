@@ -1780,7 +1780,8 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
 .profile-hero {
   display: flex;
   align-items: center;
-  gap: .75rem;
+  gap: .8rem;
+  margin-top: .2rem;
 }
 .stat-tiles {
   display: grid;
@@ -2065,18 +2066,10 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
   display: flex;
   align-items: center;
   gap: .5rem;
-  padding: .42rem 0;
+  padding: .42rem 0 0;
   font-size: .8rem;
 }
 .attempt-head b { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.attempt-head span {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--ink-2);
-}
 .attempt-head i {
   font-style: normal;
   font-size: .75rem;
@@ -2087,7 +2080,18 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
   padding: .12rem .5rem;
   white-space: nowrap;
   flex: none;
+  margin-left: auto;
 }
+.attempt-sub {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .1rem 0 .45rem;
+  font-size: .78rem;
+  color: var(--ink-2);
+  min-width: 0;
+}
+.attempt-sub span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ana sayfa feed'i */
 .home-feed {
