@@ -2086,7 +2086,7 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
   display: flex;
   align-items: center;
   gap: .6rem;
-  padding: .1rem 0 .45rem;
+  padding: .18rem 0 .48rem .2rem;
   font-size: .78rem;
   color: var(--ink-2);
   min-width: 0;
