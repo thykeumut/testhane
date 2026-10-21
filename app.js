@@ -1607,7 +1607,7 @@
         `;
       }
       rowsEl.innerHTML = rows.map((e) => {
-        const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "—");
+        const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "");
         const picks = Array.isArray(e.d) && e.d.length ? `
           <details class="picks">
             <summary>${e.d.length} sorunun seçimleri</summary>
@@ -1622,7 +1622,7 @@
             <div class="attempt-head">
               <b><a href="#/test/${esc(e.t)}">${esc(e.ti || e.t)}</a></b>
               <span>${esc(e.r || "")}</span>
-              <i>${score} · ${relDate(e.at)}</i>
+              <i>${[score, relDate(e.at)].filter(Boolean).join(" · ")}</i>
             </div>
             ${picks}
           </li>`;
