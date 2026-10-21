@@ -969,10 +969,11 @@
       const el = $("#homeFeed ul");
       if (!el) return;
       const rows = list.filter((e) => e && e.n && e.r).slice(0, 6);
+      const av = (n) => `<span class="av sm">${esc((n || "?").trim().charAt(0).toLocaleUpperCase("tr"))}</span>`;
       el.innerHTML = rows.length
         ? rows.map((e) => `
             <li>
-              <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}"><b>${esc((e.n || "").slice(0, 24))}</b></a>
+              <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}">${av(e.n)}<b>${esc((e.n || "").slice(0, 24))}</b></a>
               <span>${esc(`${e.ti || ""} — ${e.r || ""}`)}</span>
               <i>${relDate(e.at)}</i>
             </li>`).join("")
@@ -1489,25 +1490,34 @@
         .sort((a, b) => b.tur - a.tur || (b.avg || 0) - (a.avg || 0))
         .slice(0, 6);
       const medals = ["🥇", "🥈", "🥉"];
+      const av = (n, cls) => `<span class="av ${cls || ""}">${esc((n || "?").trim().charAt(0).toLocaleUpperCase("tr"))}</span>`;
+      const podBox = (r, i) => `
+        <a class="pod p${i + 1}" href="#/profil/${esc(encodeURIComponent(r.name))}">
+          ${av(r.name)}
+          <span class="medal">${medals[i]}</span>
+          <b>${esc(r.name)}</b>
+          <i>${r.tur} tur${r.avg !== null ? ` · %${r.avg}` : ""} · ${r.tests.size} test</i>
+        </a>`;
+      const top = podium.slice(0, 3);
+      const rest = podium.slice(3);
       /* son çözenler: test seçiliyken o testten, değilse her şeyden */
       const feed = clean.filter((e) => !test || e.t === test.id).slice(0, 8);
       let html = `
         <p class="zone-title">zirve</p>
-        <ol class="podium">${podium.map((r, i) => `
-          <li>
-            <a href="#/profil/${esc(encodeURIComponent(r.name))}">
-              <span class="medal">${medals[i] || "🎖"}</span>
-              <b>${esc(r.name)}</b>
-              <i>${r.tur} tur${r.avg !== null ? ` · %${r.avg}` : ""} · ${r.tests.size} test</i>
-            </a>
-          </li>`).join("")}</ol>
+        ${top.length ? `<div class="podium-top">${[1, 0, 2].map((i) => (top[i] ? podBox(top[i], i) : "")).join("")}</div>` : ""}
+        ${rest.length ? `<ol class="podium-rest">${rest.map((r) => `
+          <li><a href="#/profil/${esc(encodeURIComponent(r.name))}">
+            ${av(r.name, "sm")}
+            <b>${esc(r.name)}</b>
+            <i>${r.tur} tur${r.avg !== null ? ` · %${r.avg}` : ""} · ${r.tests.size} test</i>
+          </a></li>`).join("")}</ol>` : ""}
         <p class="zone-title">son çözenler</p>
         <ul class="tahta">${feed.length
           ? feed.map((e) => {
               const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "");
               return `
               <li>
-                <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}"><b>${esc((e.n || "").slice(0, 24))}</b></a>
+                <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}">${av(e.n, "sm")}<b>${esc((e.n || "").slice(0, 24))}</b></a>
                 <span>${esc(test ? e.r : `${e.ti || ""} — ${e.r}`)}</span>
                 <i>${score}${score ? " · " : ""}${relDate(e.at)}</i>
               </li>`;
@@ -1557,14 +1567,20 @@
      Tahtadan o isme ait tüm kayıtlar: kaç tur, kaç test, ortalama doğruluk. */
   function renderProfile(name) {
     document.title = `${name} — TESTHANE`;
+    const av = (cls) => `<span class="av ${cls}">${esc((name || "").trim().charAt(0).toLocaleUpperCase("tr"))}</span>`;
     view.innerHTML = `
       <section class="intro">
         <a class="link-back" href="#/">← tüm testler</a>
         <div class="intro-card profile-card">
-          <p class="kicker">kişi profili · tahtadan canlı veri</p>
-          <h1>${esc(name)}</h1>
-          <div class="profile-stats" id="profileStats"></div>
-          <ul class="tahta" id="profileRows"><li class="tahta-empty">yükleniyor…</li></ul>
+          <div class="profile-hero">
+            ${av("lg")}
+            <div>
+              <p class="kicker">kişi profili · tahtadan canlı veri</p>
+              <h1>${esc(name)}</h1>
+            </div>
+          </div>
+          <div class="stat-tiles" id="profileStats"></div>
+          <ul class="tahta attempts" id="profileRows"><li class="tahta-empty">yükleniyor…</li></ul>
         </div>
       </section>
     `;
@@ -1584,10 +1600,10 @@
       const last = Math.max(...rows.map((e) => e.at || 0));
       if (statsEl) {
         statsEl.innerHTML = `
-          <div class="stat"><b>${rows.length}</b><span>çözülen tur</span></div>
-          <div class="stat"><b>${tests.size}</b><span>farklı test</span></div>
-          ${avg !== null ? `<div class="stat"><b>%${avg}</b><span>ort. doğruluk</span></div>` : ""}
-          <div class="stat"><b>${relDate(last)}</b><span>son çıkış</span></div>
+          <div class="tile"><b>${rows.length}</b><span>çözülen tur</span></div>
+          <div class="tile"><b>${tests.size}</b><span>farklı test</span></div>
+          ${avg !== null ? `<div class="tile"><b>%${avg}</b><span>ort. doğruluk</span></div>` : ""}
+          <div class="tile"><b>${relDate(last)}</b><span>son çıkış</span></div>
         `;
       }
       rowsEl.innerHTML = rows.map((e) => {
