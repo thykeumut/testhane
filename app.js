@@ -103,7 +103,8 @@
     x: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
     camera: '<path d="M3 8h3l2-3h8l2 3h3v12H3V8Z"/><circle cx="12" cy="13" r="4"/>',
     satellite: '<path d="m7 7 4 4"/><path d="m3 9 2-6 5 2-2 6-5-2Z"/><path d="m17 17 4-4"/><path d="m15 21 2-5 5 2-2 5-5-2Z"/>',
-    map: '<path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2V6Z"/><path d="M9 4v14"/><path d="M15 6v14"/>'
+    map: '<path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2V6Z"/><path d="M9 4v14"/><path d="M15 6v14"/>',
+    chart: '<path d="M3 21h18"/><path d="M6 21v-7"/><path d="M11 21V9"/><path d="M16 21v-4"/>'
   };
 
   function icon(name, cls = "") {
@@ -1396,13 +1397,6 @@
               <input id="nameInput" maxlength="24" placeholder="Adın" value="${esc(store.name)}" autocomplete="off">
             </label>
 
-            <ul class="tahta" id="tahtaList" aria-live="polite"><li class="tahta-empty">“bu testi çözenler” yükleniyor…</li></ul>
-
-            <div class="agg" id="aggBox">
-              <p class="agg-title">herkes böyle seçti</p>
-              <div id="aggBody"><p class="agg-empty">yükleniyor…</p></div>
-            </div>
-
             <div class="result-actions">
               <button class="btn btn-primary" id="dlBtn">Kartı indir <span>PNG</span></button>
               <button class="btn btn-ghost" id="shareBtn">Paylaş</button>
@@ -1412,7 +1406,7 @@
 
         <div class="result-links">
           <a class="btn btn-ghost" href="#/oyna/${test.id}/${attempt?.total || defaultCount(test)}">${icon("shuffle")} Tekrar çöz</a>
-          <a class="btn btn-ghost" href="#/test/${test.id}">${icon("book")} Test sayfası</a>
+          <a class="btn btn-ghost" href="#/istatistik/${test.id}">${icon("chart")} Kim ne yapmış →</a>
           <a class="btn btn-ghost" href="#/">${icon("map")} Diğer testler</a>
         </div>
         ${test.dynamic || test.photoCover ? `
@@ -1434,81 +1428,6 @@
         state.pendingEntry = null;
       }
     });
-    boardFetch().then((list) => {
-      const el = $("#tahtaList");
-      if (!el) return;
-      const clean = list.filter((e) => e && e.t && e.r);
-      const mine = clean.filter((e) => e.t === test.id).slice(0, 6);
-      const others = clean.filter((e) => e.t !== test.id).slice(0, 4);
-      const row = (e, showTest) => {
-        const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "");
-        return `
-            <li>
-              <b data-name="${esc(e.n || "")}">${esc((e.n || "").slice(0, 24) || "anonim")}</b>
-              <span>${esc(showTest ? `${e.ti || ""} — ${e.r}` : e.r || "")}</span>
-              <i>${score}${score ? " · " : ""}${relDate(e.at)}</i>
-            </li>`;
-      };
-      const rows = [...mine.map((e) => row(e, false)), ...others.map((e) => row(e, true))];
-      el.innerHTML = rows.length
-        ? rows.join("")
-        : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol, altta adını yaz 👇</li>`;
-    });
-    /* toplu istatistik: sonuç dağılımı + soru başına en çok seçilenler */
-    boardFetch().then((list) => {
-      const body = $("#aggBody");
-      if (!body) return;
-      const mine = list.filter((e) => e && e.t === test.id);
-      if (mine.length < 2) {
-        body.innerHTML = `<p class="agg-empty">Henüz yeterli katılım yok — arkadaşına gönder, oranları burada görelim.</p>`;
-        return;
-      }
-      const bar = (label, n, total) => {
-        const pct = Math.round((n / total) * 100);
-        return `
-          <div class="agg-opt">
-            <span class="agg-label">${esc(label || "—")}</span>
-            <i class="agg-bar"><u style="width:${pct}%"></u></i>
-            <em>${pct}%</em>
-          </div>`;
-      };
-      const contested = mine.filter((e) => e.r);
-      const resRows = [...contested.reduce((m, e) => m.set(e.r, (m.get(e.r) || 0) + 1), new Map()).entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-      const byQ = new Map();
-      mine.forEach((e) => (e.d || []).forEach((x) => {
-        if (!x || !x.q) return;
-        const rec = byQ.get(x.q) || { q: x.q, total: 0, opts: new Map() };
-        rec.total++;
-        rec.opts.set(x.u, (rec.opts.get(x.u) || 0) + 1);
-        byQ.set(x.q, rec);
-      }));
-      const qRows = [...byQ.values()]
-        .filter((r) => r.total >= 2)
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 6)
-        .map((r) => {
-          const top = [...r.opts.entries()].sort((a, b) => b[1] - a[1])[0];
-          return `
-          <details class="agg-q">
-            <summary>${esc(r.q)} <em>en çok: ${esc((top && top[0]) || "—")}</em></summary>
-            ${[...r.opts.entries()].sort((a, b) => b[1] - a[1]).map(([o, n]) => bar(o, n, r.total)).join("")}
-          </details>`;
-        });
-      body.innerHTML = `
-        ${resRows.map(([r, n]) => bar(r, n, contested.length)).join("")}
-        ${qRows.join("")}`;
-    });
-    // tahta satırlarında isim tıklanabilir → profil
-    const tahtaWrap = $("#tahtaList");
-    if (tahtaWrap) {
-      tahtaWrap.addEventListener("click", (e) => {
-        const who = e.target.closest("b");
-        if (!who || !who.dataset.name) return;
-        location.hash = `#/profil/${encodeURIComponent(who.dataset.name)}`;
-      });
-    }
     $("#dlBtn").addEventListener("click", () => downloadCard(test, result, attempt, $("#dlBtn")));
     $("#shareBtn").addEventListener("click", () => shareResult(test, result, attempt, $("#shareBtn")));
 
@@ -1518,6 +1437,120 @@
       if (good && !reduceMotion) confetti();
     }
     window.scrollTo(0, 0);
+  }
+
+  /* ---------------------------------------------------------- istatistik arena
+     Sonuç ekranı sade kaldı; tüm istatistik burada: zirve tablosu,
+     son çözenler feed'i, test seçiliyken dağılım barları + soru kırılımı. */
+  function aggBar(label, n, total) {
+    const pct = Math.round((n / total) * 100);
+    return `
+      <div class="agg-opt">
+        <span class="agg-label">${esc(label || "—")}</span>
+        <i class="agg-bar"><u style="width:${pct}%"></u></i>
+        <em>${pct}%</em>
+      </div>`;
+  }
+
+  function renderStatsPage(testId) {
+    const test = testId ? byId(testId) : null;
+    document.title = test ? `${test.title} — istatistik — TESTHANE` : "İstatistik Arena — TESTHANE";
+    view.innerHTML = `
+      <section class="intro">
+        <a class="link-back" href="#/">← ${test ? esc(test.title) : "tüm testler"}</a>
+        <div class="intro-card arena-card">
+          <p class="kicker">${test ? "test arenası · tahtadan canlı veri" : "istatistik arena · tahtadan canlı veri"}</p>
+          <h1>${test ? "Kim ne yapmış?" : "Arena Şov"}</h1>
+          <div class="arena-zone" id="arenaZone"><p class="agg-empty">yükleniyor…</p></div>
+        </div>
+      </section>
+    `;
+    window.scrollTo(0, 0);
+    boardFetch().then((list) => {
+      const zone = $("#arenaZone");
+      if (!zone) return;
+      const clean = list.filter((e) => e && e.n && e.r);
+      if (!clean.length) {
+        zone.innerHTML = `<p class="agg-empty">Henüz kimse oynamadı — ilk turu sen çöz, arena hemen canlansın 🎯</p>`;
+        return;
+      }
+      /* zirve: isim bazında tur sayısı + ort. doğruluk */
+      const byName = new Map();
+      clean.forEach((e) => {
+        const k = (e.n || "").toLocaleLowerCase("tr");
+        const rec = byName.get(k) || { name: e.n, tur: 0, tests: new Set(), pcts: [] };
+        rec.tur++;
+        if (e.t) rec.tests.add(e.t);
+        if (typeof e.s === "number") rec.pcts.push(e.s);
+        byName.set(k, rec);
+      });
+      const podium = [...byName.values()]
+        .map((r) => ({ ...r, avg: r.pcts.length ? Math.round(r.pcts.reduce((a, b) => a + b, 0) / r.pcts.length) : null }))
+        .sort((a, b) => b.tur - a.tur || (b.avg || 0) - (a.avg || 0))
+        .slice(0, 6);
+      const medals = ["🥇", "🥈", "🥉"];
+      /* son çözenler: test seçiliyken o testten, değilse her şeyden */
+      const feed = clean.filter((e) => !test || e.t === test.id).slice(0, 8);
+      let html = `
+        <p class="zone-title">zirve</p>
+        <ol class="podium">${podium.map((r, i) => `
+          <li>
+            <a href="#/profil/${esc(encodeURIComponent(r.name))}">
+              <span class="medal">${medals[i] || "🎖"}</span>
+              <b>${esc(r.name)}</b>
+              <i>${r.tur} tur${r.avg !== null ? ` · %${r.avg}` : ""} · ${r.tests.size} test</i>
+            </a>
+          </li>`).join("")}</ol>
+        <p class="zone-title">son çözenler</p>
+        <ul class="tahta">${feed.length
+          ? feed.map((e) => {
+              const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "");
+              return `
+              <li>
+                <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}"><b>${esc((e.n || "").slice(0, 24))}</b></a>
+                <span>${esc(test ? e.r : `${e.ti || ""} — ${e.r}`)}</span>
+                <i>${score}${score ? " · " : ""}${relDate(e.at)}</i>
+              </li>`;
+            }).join("")
+          : `<li class="tahta-empty">${test ? "Bu testi henüz kimse yazmamış — ilk isim sen ol!" : "Henüz kimse yazmamış."}</li>`}</ul>`;
+      /* test seçiliyken: sonuç dağılımı + soru başına seçim kırılımı */
+      if (test) {
+        const mine = clean.filter((e) => e.t === test.id);
+        const contested = mine.filter((e) => e.r);
+        const resRows = [...contested.reduce((m, e) => m.set(e.r, (m.get(e.r) || 0) + 1), new Map()).entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+        const byQ = new Map();
+        mine.forEach((e) => (e.d || []).forEach((x) => {
+          if (!x || !x.q) return;
+          const rec = byQ.get(x.q) || { q: x.q, total: 0, opts: new Map() };
+          rec.total++;
+          rec.opts.set(x.u, (rec.opts.get(x.u) || 0) + 1);
+          byQ.set(x.q, rec);
+        }));
+        const qRows = [...byQ.values()]
+          .filter((r) => r.total >= 2)
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 6)
+          .map((r) => {
+            const top = [...r.opts.entries()].sort((a, b) => b[1] - a[1])[0];
+            return `
+            <details class="agg-q">
+              <summary>${esc(r.q)} <em>en çok: ${esc((top && top[0]) || "—")}</em></summary>
+              ${[...r.opts.entries()].sort((a, b) => b[1] - a[1]).map(([o, n]) => aggBar(o, n, r.total)).join("")}
+            </details>`;
+          });
+        if (mine.length) {
+          html += `
+            <p class="zone-title">herkes böyle seçti</p>
+            ${contested.length ? resRows.map(([r, n]) => aggBar(r, n, contested.length)).join("") : `<p class="agg-empty">Sonuç dağılımı için bekleniyor…</p>`}
+            ${qRows.length ? qRows.join("") : `<p class="agg-empty">Soru kırılımı 2 kişiden sonra açılır.</p>`}`;
+        } else {
+          html += `<p class="zone-title">herkes böyle seçti</p><p class="agg-empty">Bu test için henüz veri yok — beklemeden bir tur at 💫</p>`;
+        }
+      }
+      zone.innerHTML = html;
+    });
   }
 
   /* ---------------------------------------------------------- kişi profili
@@ -1923,6 +1956,7 @@
     if (parts[0] === "test" && parts[1]) return renderIntro(byId(parts[1]));
     if (parts[0] === "oyna" && parts[1]) return startQuiz(byId(parts[1]), Number(parts[2]) || 0);
     if (parts[0] === "sonuc" && parts[1] && parts[2]) return renderResult(byId(parts[1]), parts[2]);
+    if (parts[0] === "istatistik") return renderStatsPage(parts[1]);
     if (parts[0] === "profil" && parts[1]) return renderProfile(decodeURIComponent(parts[1]));
     state.quiz = null;
     return renderHome();
