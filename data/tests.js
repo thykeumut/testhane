@@ -273,6 +273,7 @@ const TESTS = [
     questions: [
       {
         q: "Türkiye'nin en büyük gölü hangisidir?",
+        imageKey: "van-golu",
         a: [
           { t: "Tuz Gölü" },
           { t: "Van Gölü", c: true },
@@ -291,6 +292,7 @@ const TESTS = [
       },
       {
         q: "Antik Efes kenti hangi ilimizde bulunur?",
+        imageKey: "efes",
         a: [
           { t: "İzmir", c: true },
           { t: "Muğla" },
@@ -300,6 +302,7 @@ const TESTS = [
       },
       {
         q: "TBMM hangi yıl açılmıştır?",
+        imageKey: "tbmm",
         a: [
           { t: "1919" },
           { t: "1920", c: true },
@@ -309,6 +312,7 @@ const TESTS = [
       },
       {
         q: "Türkiye'nin en yüksek dağı hangisidir?",
+        imageKey: "agri-dagi",
         a: [
           { t: "Erciyes Dağı" },
           { t: "Süphan Dağı" },
@@ -318,6 +322,7 @@ const TESTS = [
       },
       {
         q: "Türkiye'den UNESCO Dünya Mirası Listesi'ne giren ilk yer neresidir?",
+        imageKey: "sultanahmet",
         a: [
           { t: "İstanbul Tarihi Alanları", c: true },
           { t: "Göreme ve Kapadokya" },
@@ -327,6 +332,7 @@ const TESTS = [
       },
       {
         q: "Pamukkale travertenleri hangi ilimizdedir?",
+        imageKey: "pamukkale",
         a: [
           { t: "Denizli", c: true },
           { t: "Afyonkarahisar" },
@@ -345,6 +351,7 @@ const TESTS = [
       },
       {
         q: "Türkiye'nin en uzun nehri hangisidir?",
+        imageKey: "kizilirmak",
         a: [
           { t: "Fırat" },
           { t: "Kızılırmak", c: true },
@@ -354,11 +361,52 @@ const TESTS = [
       },
       {
         q: "Aşağıdaki illerden hangisinin Karadeniz'e kıyısı yoktur?",
+        imageKey: "amasya",
         a: [
           { t: "Samsun" },
           { t: "Trabzon" },
           { t: "Amasya", c: true },
           { t: "Sinop" }
+        ]
+      },
+      {
+        q: "Peri bacalarıyla ünlü Kapadokya'nın merkezi hangi ilimizdedir?",
+        imageKey: "kapadokya",
+        a: [
+          { t: "Kayseri" },
+          { t: "Niğde" },
+          { t: "Nevşehir", c: true },
+          { t: "Aksaray" }
+        ]
+      },
+      {
+        q: "Dolmabahçe Sarayı hangi ilimizdedir?",
+        imageKey: "dolmabahce",
+        a: [
+          { t: "İstanbul", c: true },
+          { t: "Ankara" },
+          { t: "İzmir" },
+          { t: "Bursa" }
+        ]
+      },
+      {
+        q: "Dicle'yi tepeden izleyen taş evleriyle ünlü şehrimiz hangisidir?",
+        imageKey: "mardin",
+        a: [
+          { t: "Gaziantep" },
+          { t: "Mardin", c: true },
+          { t: "Şanlıurfa" },
+          { t: "Batman" }
+        ]
+      },
+      {
+        q: "Bergama antik kenti hangi ilimizdedir?",
+        imageKey: "bergama",
+        a: [
+          { t: "İzmir", c: true },
+          { t: "Balıkesir" },
+          { t: "Aydın" },
+          { t: "Çanakkale" }
         ]
       }
     ],

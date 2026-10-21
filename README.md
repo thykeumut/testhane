@@ -4,8 +4,8 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **35 test** — 18 el yazımı + 12 Vikipedi beslemeli + 5 yemek testi
-- **~1.400 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
+- **36 test** — 18 el yazımı + 12 Vikipedi beslemeli + 6 yemek testi
+- **~1.520 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
   - 83 portre (bilim insanları, yazarlar, ressamlar/müzisyenler, tarihî kişiler)

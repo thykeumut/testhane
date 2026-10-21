@@ -1681,3 +1681,16 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
 
 .opt-key { transition: transform .15s ease; }
 .opt:hover .opt-key { transform: rotate(-8deg) scale(1.15); }
+
+/* ---------------------------------------------------------- istatistik şeridi */
+.intro-stats {
+  margin: .35rem 0 .1rem;
+  font-size: .82rem;
+  color: var(--ink-2);
+}
+.intro-stats b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.card-meta .card-go { margin-left: auto; }
+.card-meta { gap: .28rem; }

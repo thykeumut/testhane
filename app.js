@@ -125,6 +125,7 @@
     "turk-dizi-film-testi": "film",
     "dunya-mutfagi": "utensils",
     "en-iyi-yemekler": "utensils",
+    "mutfak-tanima": "utensils",
     "o-mu-bu-mu-yemek": "shuffle",
     "tabak-esle": "utensils",
     "hangi-sehirde-yasamalisin": "building",
@@ -598,6 +599,32 @@
       });
     }
 
+    /* --- hangi mutfak?: 4 seçenekli, fotoğraflı, büyük havuz --- */
+    if (cuisines.length >= 6) {
+      out.push({
+        id: "mutfak-tanima",
+        title: "Hangi mutfağın?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(dishes[Math.floor(Math.random() * dishes.length)].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#7ee0a2",
+        desc: `${dishes.length} yemek fotoğrafı, ${cuisines.length} ülke. Mutfak tahmin döngüsünün en zorlu turu.`,
+        minutes: 4,
+        questions: dishes.map((d) => ({
+          q: "Bu tabak hangi mutfağın klasiği?",
+          image: d.img,
+          imageFit: "cover",
+          fact: `${d.name}${d.desc ? " · " + d.desc.split(" — ").slice(1).join(" — ") : ""}`,
+          wiki: d.page,
+          a: choices(d.cuisine, cuisines)
+        })),
+        results: bands("hangimuthak", "visual")
+      });
+    }
+
     /* --- tabak eşleştir: tariften tabağa, cevaplar fotoğraflı --- */
     const described = dishes.filter((d) => {
       const text = (d.desc || "").split(" — ").slice(1).join(" — ").trim();
@@ -667,8 +694,25 @@
   applyExtras();
 
   let ALL_TESTS = null;
+  const TEST_ORDER = [
+    "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "mutfak-tanima", "tabak-esle",
+    "wiki-bayraklar", "en-iyi-yemekler", "o-mu-bu-mu-yemek",
+    "o-mu-bu-mu", "hangi-hayvan-sensin", "hangi-istanbul-semtisin",
+    "turkiye-genel-kultur", "mantik-ve-dikkat"
+  ];
   function allTests() {
-    if (!ALL_TESTS) ALL_TESTS = [...TESTS, ...buildWikiTests(), ...buildFoodTests()];
+    if (!ALL_TESTS) {
+      const flat = [...TESTS, ...buildWikiTests(), ...buildFoodTests()];
+      ALL_TESTS = flat
+        .map((t, i) => ({ t, i }))
+        .sort((a, b) => {
+          const ia = TEST_ORDER.indexOf(a.t.id); const ib = TEST_ORDER.indexOf(b.t.id);
+          const pa = ia === -1 ? 900 + a.i : ia;
+          const pb = ib === -1 ? 900 + b.i : ib;
+          return pa - pb;
+        })
+        .map((x) => x.t);
+    }
     return ALL_TESTS;
   }
 
@@ -705,6 +749,27 @@
     const solved = new Set(store.attempts.map((a) => a.testId)).size;
     const correct = store.attempts.reduce((sum, a) => sum + (a.score || 0), 0);
     return { solved, correct, streak: calcStreak(store.attempts) };
+  }
+
+  function testStats(test) {
+    const at = store.attempts.filter((a) => a.testId === test.id);
+    let best = null;
+    at.forEach((a) => {
+      if (typeof a.pct === "number" && (best === null || a.pct > best)) best = a.pct;
+    });
+    const count = at.length;
+    const last = count ? Math.max(...at.map((a) => a.at)) : null;
+    return { count, best, last };
+  }
+
+  function relDate(ts) {
+    if (!ts) return "";
+    const today = dayKey(Date.now());
+    const yest = dayKey(Date.now() - 86400000);
+    const d = dayKey(ts);
+    if (d === today) return "bugün";
+    if (d === yest) return "dün";
+    return `${Math.max(1, Math.floor((Date.now() - ts) / 86400000))} gün önce`;
   }
 
   /* ---------------------------------------------------------- sonuç hesaplama */
@@ -888,6 +953,7 @@
 
   function cardHTML(t) {
     const done = store.attempts.some((a) => a.testId === t.id);
+    const st = testStats(t);
     const count = defaultCount(t);
     return `
       <a class="card ${t.hero ? "is-hero" : ""}" href="#/test/${t.id}">
@@ -895,13 +961,14 @@
           <span class="card-icon">${icon(testIcon(t))}</span>
           <span class="card-cat">${esc(t.category)}</span>
           ${t.dynamic ? `<span class="card-src">wikimedia</span>` : ""}
-          ${done ? `<span class="card-done">${icon("check")} çözüldü</span>` : ""}
+          ${done ? `<span class="card-done">${icon("check")}${st.count > 1 ? st.count + "× çözüldü" : "çözüldü"}</span>` : ""}
         </div>
         <div class="card-body">
           <h3>${esc(t.title)}</h3>
           <p>${esc(t.desc)}</p>
           <div class="card-meta">
             <span>${count} soru</span><i>·</i><span>${t.minutes} dk</span>
+            ${st.best !== null ? `<i>·</i><span>en iyi %${st.best}</span>` : ""}
             <span class="card-go">başla <b>→</b></span>
           </div>
         </div>
@@ -932,6 +999,7 @@
     const chosen = defaultCount(test);
     const counts = countChoices(test);
     const maxOpts = Math.min(9, Math.max(...test.questions.map((q) => q.a.length)));
+    const st = testStats(test);
 
     view.innerHTML = `
       <section class="intro">
@@ -946,6 +1014,11 @@
             <p class="kicker" id="introKicker">${chosen} soru · ${test.minutes} dakika</p>
             <h1>${esc(test.title)}</h1>
             <p class="intro-desc">${esc(test.desc)}</p>
+            <p class="intro-stats" aria-live="polite">
+              ${st.count
+                ? `<b>${st.count}</b> tur çözdün${st.best !== null ? ` · en iyi <b>%${st.best}</b>` : ""} · son: ${relDate(st.last)}`
+                : `bu testi daha önce çözmüş değilsin — ilk turun kabarıyor 🎬`}
+            </p>
 
             <div class="pick" id="pick">
               <span class="pick-label">kaç soru?</span>
