@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  var CACHE = "testhane.v2";
+  var CACHE = "testhane.v3";
   var ASSETS = [
     "./",
     "./index.html",
