@@ -1740,3 +1740,16 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
 .tahta li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tahta li i { font-style: normal; font-size: .72rem; color: var(--ink-3); white-space: nowrap; }
 .tahta-empty { justify-content: center; color: var(--ink-3); }
+
+/* ana sayfa feed'i */
+.home-feed {
+  margin-top: 1.1rem;
+  max-width: 34rem;
+}
+.feed-title {
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-family: var(--mono);
+}

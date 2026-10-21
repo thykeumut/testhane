@@ -774,25 +774,38 @@
 
   /* ---------------------------------------------------------- paylaşılan tahta
      Sonuçlar anonim bir textdb.dev hücresinde saklanır: isim + test + sonuç.
-     Çevrimdışıyken sessizce boş listeye düşer. */
+     Çevrimdışıyken sessizce boş listeye düşer; okuma başarısızsa yazmıyoruz
+     (tahtayı kazayla silmemek için). Son okuma localStorage'da yedeklenir. */
   const BOARD_URL = "https://textdb.dev/api/data/thboard2x9k41";
 
-  async function boardFetch() {
+  async function boardList() {
     const ctrl = new AbortController();
     const kill = setTimeout(() => ctrl.abort(), 6000);
     try {
       const res = await fetch(`${BOARD_URL}?t=${Date.now()}`, { cache: "no-store", signal: ctrl.signal });
       const arr = JSON.parse(await res.text());
-      return Array.isArray(arr) ? arr : [];
-    } catch (e) {
-      return [];
-    } finally {
+      const list = Array.isArray(arr) ? arr : null;
+      if (list) {
+        try { localStorage.setItem("testhane.board", JSON.stringify(list)); } catch (e) { /* dolu olabilir */ }
+        return { list, ok: true };
+      }
+    } catch (e) { /* ağ hatası: yedeğe düş */ }
+    finally {
       clearTimeout(kill);
     }
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem("testhane.board") || "null"); } catch (e2) { /* bozuk yedek */ }
+    return { list: Array.isArray(cached) ? cached : null, ok: false };
+  }
+
+  async function boardFetch() {
+    const { list } = await boardList();
+    return list || [];
   }
 
   async function boardPush(entry) {
-    const list = await boardFetch();
+    const { list } = await boardList();
+    if (!list) return; /* okuma başarısız — yazma iptal */
     list.unshift(entry);
     try {
       await fetch(BOARD_URL, {
@@ -800,6 +813,7 @@
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(list.slice(0, 120))
       });
+      try { localStorage.setItem("testhane.board", JSON.stringify(list.slice(0, 120))); } catch (e) { /* sessiz */ }
     } catch (e) { /* sessizce geç; sonuç yerel zaten kayıtlı */ }
   }
 
@@ -912,6 +926,7 @@
             ? `<b>${store.name.trim() ? esc(store.name.trim()) + ", " : ""}</b>${store.attempts.length} tur attın, ${s.correct} doğru cevap biriktirdin.`
             : "Henüz kayıt yok. İlk testini çöz."}
         </p>
+        <div class="home-feed" id="homeFeed"><p class="feed-title">son çözenler</p><ul class="tahta"><li class="tahta-empty">yükleniyor…</li></ul></div>
       </section>
 
       <section class="catalog">
@@ -948,6 +963,19 @@
         boardPush(state.pendingEntry);
         state.pendingEntry = null;
       }
+    });
+    boardFetch().then((list) => {
+      const el = $("#homeFeed ul");
+      if (!el) return;
+      const rows = list.filter((e) => e && e.n && e.r).slice(0, 6);
+      el.innerHTML = rows.length
+        ? rows.map((e) => `
+            <li>
+              <b>${esc((e.n || "").slice(0, 24))}</b>
+              <span>${esc(`${e.ti || ""} — ${e.r || ""}`)}</span>
+              <i>${relDate(e.at)}</i>
+            </li>`).join("")
+        : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol!</li>`;
     });
     $("#search").addEventListener("input", (e) => {
       state.query = e.target.value;
@@ -1387,17 +1415,21 @@
     boardFetch().then((list) => {
       const el = $("#tahtaList");
       if (!el) return;
-      const mine = list.filter((e) => e && e.t === test.id).slice(0, 8);
-      el.innerHTML = mine.length
-        ? mine.map((e) => {
-            const pct = test.mode === "trivia" && typeof e.s === "number" ? `%${e.s} · ` : "";
-            return `
+      const clean = list.filter((e) => e && e.t && e.r);
+      const mine = clean.filter((e) => e.t === test.id).slice(0, 6);
+      const others = clean.filter((e) => e.t !== test.id).slice(0, 4);
+      const row = (e, showTest) => {
+        const pct = test.mode === "trivia" && typeof e.s === "number" ? `%${e.s} · ` : "";
+        return `
             <li>
               <b>${esc((e.n || "").slice(0, 24) || "anonim")}</b>
-              <span>${esc(e.r || "")}</span>
+              <span>${esc(showTest ? `${e.ti || ""} — ${e.r}` : e.r || "")}</span>
               <i>${pct}${relDate(e.at)}</i>
             </li>`;
-          }).join("")
+      };
+      const rows = [...mine.map((e) => row(e, false)), ...others.map((e) => row(e, true))];
+      el.innerHTML = rows.length
+        ? rows.join("")
         : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol, altta adını yaz 👇</li>`;
     });
     $("#dlBtn").addEventListener("click", () => downloadCard(test, result, attempt, $("#dlBtn")));
