@@ -1779,6 +1779,108 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
   .profile-stats .stat:nth-child(odd) { border-left: 0; }
 }
 
+/* ---------------------------------------------------------- toplu seçim istatistiği */
+.agg {
+  margin-top: .9rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+  text-align: left;
+}
+.agg-title {
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  margin-bottom: .4rem;
+}
+.agg-empty {
+  font-size: .78rem;
+  color: var(--ink-3);
+}
+.agg-opt {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 1fr) 2fr auto;
+  align-items: center;
+  gap: .5rem;
+  padding: .2rem 0;
+}
+.agg-label {
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agg-bar {
+  display: block;
+  height: 7px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--line) 60%, transparent);
+  overflow: hidden;
+}
+.agg-bar u {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent, var(--cobalt));
+}
+.agg-opt em {
+  font-style: normal;
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 2.4rem;
+  text-align: right;
+}
+.agg-q {
+  border-top: 1px dotted var(--line);
+  padding-top: .4rem;
+  margin-top: .4rem;
+}
+.agg-q summary {
+  cursor: pointer;
+  font-size: .78rem;
+  color: var(--ink-2);
+  list-style-position: outside;
+}
+.agg-q summary em { font-style: normal; color: var(--ink-3); font-size: .72rem; display: block; }
+.agg-q summary:hover { color: var(--ink); }
+.agg-q[open] summary { color: var(--ink); }
+.agg-q .agg-opt:first-child .agg-bar u { background: var(--cobalt-ink); }
+
+/* profil: kişi seçimleri */
+.attempt { display: block; }
+.attempt + .attempt { border-top: 1px dotted var(--line); }
+.attempt-head {
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  padding: .32rem 0;
+  font-size: .8rem;
+}
+.attempt-head b { white-space: nowrap; }
+.attempt-head i { font-style: normal; font-size: .72rem; color: var(--ink-3); margin-left: auto; white-space: nowrap; }
+.picks { margin: 0 0 .5rem .2rem; }
+.picks summary {
+  cursor: pointer;
+  font-size: .72rem;
+  color: var(--ink-3);
+}
+.picks ol {
+  margin: .35rem 0 0 .9rem;
+  padding: 0;
+  font-size: .76rem;
+}
+.picks li { padding: .14rem 0; color: var(--ink-2); list-style: none; }
+.picks li em { font-style: normal; display: inline-block; width: 1.15rem; }
+.picks li.d-ok em { color: #49aa64; }
+.picks li.d-no em { color: #c63e3e; }
+.picks li.d-no u { text-decoration: none; color: var(--ink-3); font-size: .7rem; }
+.picks li.d-neu em { color: var(--ink-3); }
+
 /* ana sayfa feed'i */
 .home-feed {
   margin-top: 1.1rem;

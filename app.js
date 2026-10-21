@@ -811,9 +811,9 @@
       await fetch(BOARD_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify(list.slice(0, 120))
+        body: JSON.stringify(list.slice(0, 80))
       });
-      try { localStorage.setItem("testhane.board", JSON.stringify(list.slice(0, 120))); } catch (e) { /* sessiz */ }
+      try { localStorage.setItem("testhane.board", JSON.stringify(list.slice(0, 80))); } catch (e) { /* sessiz */ }
     } catch (e) { /* sessizce geç; sonuç yerel zaten kayıtlı */ }
   }
 
@@ -1307,6 +1307,21 @@
     }, delay);
   }
 
+  /* tahtaya "kimin neyi seçtiği" detayını hazırlar (soru başına seçim) */
+  function buildBoardDetail(test, questions, answers) {
+    return questions.slice(0, 12).map((q, i) => {
+      const opt = q.a[answers[i]];
+      if (!opt) return null;
+      const base = { q: String(q.q || "").slice(0, 42), u: String(opt.t || "").slice(0, 60) };
+      if (test.mode === "trivia") {
+        const correct = q.a.find((o) => o.c);
+        base.ok = opt.c ? 1 : 0;
+        base.k = String(correct ? correct.t : "").slice(0, 60);
+      }
+      return base;
+    }).filter(Boolean);
+  }
+
   function finishQuiz() {
     const { test, questions, answers } = state.quiz;
     const outcome = computeOutcome(test, questions, answers);
@@ -1331,6 +1346,8 @@
       ti: test.title,
       r: outcome.result.title,
       s: outcome.pct,
+      sc: typeof outcome.score === "number" ? [outcome.score, outcome.total] : null,
+      d: buildBoardDetail(test, questions, answers),
       at: Date.now()
     };
     if (store.name) {
@@ -1381,6 +1398,11 @@
 
             <ul class="tahta" id="tahtaList" aria-live="polite"><li class="tahta-empty">“bu testi çözenler” yükleniyor…</li></ul>
 
+            <div class="agg" id="aggBox">
+              <p class="agg-title">herkes böyle seçti</p>
+              <div id="aggBody"><p class="agg-empty">yükleniyor…</p></div>
+            </div>
+
             <div class="result-actions">
               <button class="btn btn-primary" id="dlBtn">Kartı indir <span>PNG</span></button>
               <button class="btn btn-ghost" id="shareBtn">Paylaş</button>
@@ -1419,18 +1441,64 @@
       const mine = clean.filter((e) => e.t === test.id).slice(0, 6);
       const others = clean.filter((e) => e.t !== test.id).slice(0, 4);
       const row = (e, showTest) => {
-        const pct = test.mode === "trivia" && typeof e.s === "number" ? `%${e.s} · ` : "";
+        const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "");
         return `
             <li>
               <b data-name="${esc(e.n || "")}">${esc((e.n || "").slice(0, 24) || "anonim")}</b>
               <span>${esc(showTest ? `${e.ti || ""} — ${e.r}` : e.r || "")}</span>
-              <i>${pct}${relDate(e.at)}</i>
+              <i>${score}${score ? " · " : ""}${relDate(e.at)}</i>
             </li>`;
       };
       const rows = [...mine.map((e) => row(e, false)), ...others.map((e) => row(e, true))];
       el.innerHTML = rows.length
         ? rows.join("")
         : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol, altta adını yaz 👇</li>`;
+    });
+    /* toplu istatistik: sonuç dağılımı + soru başına en çok seçilenler */
+    boardFetch().then((list) => {
+      const body = $("#aggBody");
+      if (!body) return;
+      const mine = list.filter((e) => e && e.t === test.id);
+      if (mine.length < 2) {
+        body.innerHTML = `<p class="agg-empty">Henüz yeterli katılım yok — arkadaşına gönder, oranları burada görelim.</p>`;
+        return;
+      }
+      const bar = (label, n, total) => {
+        const pct = Math.round((n / total) * 100);
+        return `
+          <div class="agg-opt">
+            <span class="agg-label">${esc(label || "—")}</span>
+            <i class="agg-bar"><u style="width:${pct}%"></u></i>
+            <em>${pct}%</em>
+          </div>`;
+      };
+      const contested = mine.filter((e) => e.r);
+      const resRows = [...contested.reduce((m, e) => m.set(e.r, (m.get(e.r) || 0) + 1), new Map()).entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const byQ = new Map();
+      mine.forEach((e) => (e.d || []).forEach((x) => {
+        if (!x || !x.q) return;
+        const rec = byQ.get(x.q) || { q: x.q, total: 0, opts: new Map() };
+        rec.total++;
+        rec.opts.set(x.u, (rec.opts.get(x.u) || 0) + 1);
+        byQ.set(x.q, rec);
+      }));
+      const qRows = [...byQ.values()]
+        .filter((r) => r.total >= 2)
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 6)
+        .map((r) => {
+          const top = [...r.opts.entries()].sort((a, b) => b[1] - a[1])[0];
+          return `
+          <details class="agg-q">
+            <summary>${esc(r.q)} <em>en çok: ${esc((top && top[0]) || "—")}</em></summary>
+            ${[...r.opts.entries()].sort((a, b) => b[1] - a[1]).map(([o, n]) => bar(o, n, r.total)).join("")}
+          </details>`;
+        });
+      body.innerHTML = `
+        ${resRows.map(([r, n]) => bar(r, n, contested.length)).join("")}
+        ${qRows.join("")}`;
     });
     // tahta satırlarında isim tıklanabilir → profil
     const tahtaWrap = $("#tahtaList");
@@ -1489,12 +1557,27 @@
           <div class="stat"><b>${relDate(last)}</b><span>son çıkış</span></div>
         `;
       }
-      rowsEl.innerHTML = rows.map((e) => `
-            <li>
+      rowsEl.innerHTML = rows.map((e) => {
+        const score = Array.isArray(e.sc) ? `${e.sc[0]}/${e.sc[1]}` : (typeof e.s === "number" ? `%${e.s}` : "—");
+        const picks = Array.isArray(e.d) && e.d.length ? `
+          <details class="picks">
+            <summary>${e.d.length} sorunun seçimleri</summary>
+            <ol>${e.d.map((x, i) => `
+              <li class="${x.ok === 1 ? "d-ok" : x.ok === 0 ? "d-no" : "d-neu"}">
+                <em>${x.ok === 1 ? "✓" : x.ok === 0 ? "✗" : "→"}</em>${esc(x.u)}
+                ${x.ok === 0 ? `<u>doğrusu: ${esc(x.k)}</u>` : ""}
+              </li>`).join("")}</ol>
+          </details>` : "";
+        return `
+          <li class="attempt">
+            <div class="attempt-head">
               <b><a href="#/test/${esc(e.t)}">${esc(e.ti || e.t)}</a></b>
               <span>${esc(e.r || "")}</span>
-              <i>${typeof e.s === "number" ? `%${e.s} · ` : ""}${relDate(e.at)}</i>
-            </li>`).join("");
+              <i>${score} · ${relDate(e.at)}</i>
+            </div>
+            ${picks}
+          </li>`;
+      }).join("");
     });
   }
 
