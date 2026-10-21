@@ -57,7 +57,7 @@
 
     e.respondWith((function () {
       var cached;
-      return caches.match(e.request, { ignoreSearch: true })
+      return caches.match(e.request)
         .then(function (hit) {
           cached = hit;
           if (cached && (sameOrigin || isWikiAsset)) return cached;

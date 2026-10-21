@@ -4,19 +4,20 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **30 test** — 18 el yazımı + 12 Vikipedi beslemeli
-- **1.195 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
+- **35 test** — 18 el yazımı + 12 Vikipedi beslemeli + 5 yemek testi
+- **~1.400 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
   - 83 portre (bilim insanları, yazarlar, ressamlar/müzisyenler, tarihî kişiler)
   - 54 tarihî yer (Türkiye + dünya)
   - 8 gezegen
   - 37 hayvan
+  - 61 yemek klasiği, fotoğraflı; 37'sinde tarifi okuyup tabak eşleştirme
   - 828 soruluk **Büyük karışık test**
   - 367 el yazımı soru; uzun testlerde 16–34 soru
 - **Soru sayısı seçimi** — test tanıtımında `5 / 10 / 20 / tümü` düğmeleri; seçim teste başlarken uygulanır
 - **Açık / koyu tema** — sağ üstteki düğme; tercih `localStorage` ile hatırlanır, sistem temasına uyum sağlar
-- **Vikipedi filtresi** — ana sayfadaki `vikipedi` çipiyle 12 görselli testi tek tıkla ayır
+- **Vikipedi filtresi** — ana sayfadaki `vikipedi` çipiyle görselli testleri tek tıkla ayır
 - **İki sonuç motoru**
   - `personality`: seçenek ağırlıkları toplanır, en yüksek sonuç kazanır
   - `trivia`: doğru sayısına göre yüzdelik dilim
@@ -60,6 +61,11 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 | Bu yer nerede? | bilgi | Vikipedi |
 | Gezegenleri tanı | bilgi | Vikipedi |
 | Hayvanları tanı | bilgi | Vikipedi / Commons |
+| Dünyanın en iyi yemekleri | bilgi | Vikipedi / Commons |
+| O mu bu mu? — yemek | bilgi | Vikipedi / Commons |
+| Tabak eşleştir (resimli cevaplar) | bilgi | Vikipedi / Commons |
+| O mu bu mu? — Türk yemekleri (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — dünya yemekleri (büyük görselli) | kişilik | Vikipedi / Commons |
 | Büyük karışık test | bilgi | tüm havuzlar |
 
 ## Çalıştırma
@@ -132,10 +138,12 @@ testhane/
 │  ├─ new-tests.js    # O mu bu mu + 4 yeni kişilik testi
 │  ├─ extra-tests.js  # ek sorular, kapak anahtarları, güncel tanıtımlar
 │  ├─ wiki.js         # Vikipedi/Wikidata'dan üretilen veri
-│  └─ wiki-extras.js  # el yazımı testlerin Wikimedia görselleri
+│  ├─ wiki-extras.js  # el yazımı testlerin Wikimedia görselleri
+│  └─ food.js         # yemek testleri verisi (fotoğraflı)
 └─ tools/
    ├─ build-wiki.mjs  # Vikipedi/Wikidata veri toplama betiği
-   └─ build-extras.mjs# el yazımı test görselleri betiği
+   ├─ build-extras.mjs# el yazımı test görselleri betiği
+   └─ build-food.mjs  # yemek verisi betiği (pageimages API)
 ```
 
 ## Yeni test eklemek

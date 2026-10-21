@@ -126,6 +126,7 @@
     "dunya-mutfagi": "utensils",
     "en-iyi-yemekler": "utensils",
     "o-mu-bu-mu-yemek": "shuffle",
+    "tabak-esle": "utensils",
     "hangi-sehirde-yasamalisin": "building",
     "wiki-bayraklar": "flag",
     "wiki-baskentler": "landmark",
@@ -313,7 +314,8 @@
         questions: pool.map((p) => ({
           q: "Bu kişi kim?",
           image: p.img,
-          imageFit: "cover",
+          imageFit: "contain",
+          mediaDark: true,
           fact: p.desc || p.fact,
           wiki: p.page,
           a: choices(p, pool, (x) => x.name)
@@ -455,10 +457,91 @@
   }
 
   /* --- yemek verisinden görselli testler (tools/build-food.mjs üretimi) --- */
+
+  /* persona ağırlıkları: yemeğin "ruhu" */
+  const FOOD_W = {
+    "döner": { etci: 2, sokak: 1 }, "İskender": { etci: 2, hamur: 1 },
+    "menemen": { sofra: 2 }, "baklava": { tatli: 2 }, "mantı": { hamur: 2 },
+    "köfte": { etci: 2 }, "simit": { sokak: 2, hamur: 1 }, "çiğ köfte": { sokak: 2, etci: 1 },
+    "mücver": { sofra: 2 }, "karnıyarık": { sofra: 2 }, "içli köfte": { sofra: 2, etci: 1 },
+    "kısır": { sofra: 1, sokak: 1 }, "lahmacun": { sokak: 2, hamur: 1 }, "pide": { hamur: 2, etci: 1 },
+    "börek": { hamur: 2 }, "lokum": { tatli: 2 }, "boza": { tatli: 1, sokak: 1 },
+    "aşure": { tatli: 2 }, "tavuk göğsü": { tatli: 2 }, "kokoreç": { sokak: 2 },
+    "İmam bayıldı": { sofra: 2 }, "kumpir": { sokak: 2 }, "mercimek çorbası": { sofra: 2 },
+    "helva": { tatli: 2 }, "pilav": { sofra: 2 }, "balık ekmek": { deniz: 2, sokak: 1 },
+    "şiş kebap": { etci: 2 }, "falafel": { sokak: 2 }, "humus": { sofra: 1, sokak: 1 },
+    "pizza": { hamur: 2 }, "lasagna": { sofra: 2 }, "spagetti": { sofra: 2 },
+    "risotto": { sofra: 2 }, "focaccia": { hamur: 2 }, "sushi": { deniz: 2 },
+    "ramen": { sofra: 2 }, "sashimi": { deniz: 2 }, "tempura": { sofra: 2 },
+    "udon": { sofra: 2 }, "gyoza": { sofra: 2 }, "taco": { sokak: 2 },
+    "burrito": { sokak: 2 }, "guacamole": { sofra: 1, sokak: 1 }, "enchilada": { sofra: 2 },
+    "hamburger": { sokak: 2, etci: 1 }, "hot dog": { sokak: 2 }, "paella": { sofra: 2, deniz: 1 },
+    "churros": { tatli: 2 }, "tortilla İspanyol": { sofra: 2 }, "croissant": { hamur: 2 },
+    "ratatouille": { sofra: 2 }, "baguette": { hamur: 2 }, "soğan çorbası": { sofra: 2 },
+    "şnitzel": { etci: 2 }, "balık ve cips": { sokak: 2, deniz: 1 }, "ceviçe": { deniz: 2 },
+    "tiramisu": { tatli: 2 }, "poutine": { sokak: 2 }, "kuskus": { sofra: 2 },
+    "pastel de nata": { tatli: 2 }, "pavlova": { tatli: 2 }, "pad thai": { sofra: 2 },
+    "Tom Yum çorbası": { sofra: 2, deniz: 1 }, "Pho": { sofra: 2 }, "biryani": { sofra: 2 },
+    "masala": { sofra: 2 }, "Pekin ördeği": { sofra: 1, etci: 1 }, "dim sum": { sofra: 2 },
+    "Kimçi": { sofra: 2 }, "bibimbap": { sofra: 2 },
+    "feijoada": { sofra: 2, etci: 1 }, "empanada": { sokak: 2 }, "arepa": { sokak: 2 },
+    "gyros": { sokak: 2, etci: 1 }, "pierogi": { sofra: 2 }
+  };
+  const dishW = (name) => FOOD_W[String(name)] || FOOD_W[String(name).toLocaleLowerCase("tr")] || null;
+  const FOOD_RESULTS = [
+    { id: "etci", title: "Ateşli etçil", desc: "Senin sofra kuralları net: önce et var, gerisi hikâye. Izgara kokusu bile seni çabuk ikna eder.", tags: ["et", "ızgara", "cesur"] },
+    { id: "tatli", title: "Şerbetli şahin", desc: "Tatlıya ayrılan konum pazarlık kabul etmiyor. Menüde tatlı yoksa sipariş tamam sayılmaz.", tags: ["tatlı", "şerbet", "keyif"] },
+    { id: "hamur", title: "Hamur işi sanatçısı", desc: "Sıcak, içi dolu hamur işi senin mutlu yeri. Börek kokusu seni odaya çağırır.", tags: ["hamur", "sıcak", "pratik"] },
+    { id: "sokak", title: "Sokak lezzeti avcısı", desc: "Senin favori restoran sokak. Tezgâh başında yenen her şey masadakinden lezzetli.", tags: ["sokak", "kâşif", "pragmatik"] },
+    { id: "deniz", title: "Denizin çocuğu", desc: "Deniz kenarı, tuzlu rüzgâr ve taze balık: senin mutfağın mavi. Balık yoksa menüde eksik var.", tags: ["deniz", "balık", "taze"] },
+    { id: "sofra", title: "Ev sofrası huzuru", desc: "Senin lezzet tanımı evin sıcaklığı. Bir tepsi pilav, sabır isteyen bir çorba, uzun bir sofra sohbeti.", tags: ["ev yemeği", "sıcak", "aile"] }
+  ];
+
+  function buildBigOMuBuMu(id, title, cuisine, desc) {
+    const mapped = (FOOD.dishes || []).filter((d) =>
+      d.img && dishW(d.name) && (!cuisine || d.cuisine === cuisine));
+    if (mapped.length < 10) return [];
+    const pairs = [];
+    const queue = shuffle(mapped);
+    for (let i = 0; i < queue.length - 1; i += 2) pairs.push([queue[i], queue[i + 1]]);
+    if (pairs.length < 5) return [];
+    return [{
+      id,
+      title,
+      category: "eğlence",
+      mode: "personality",
+      dynamic: true,
+      sample: 10,
+      cover: coverPhoto(pairs[0][0].img, "rgba(10,10,12,.5)"),
+      photoCover: true,
+      accent: "#ff5c93",
+      desc,
+      minutes: 3,
+      questions: pairs.map(([a, b]) => ({
+        q: "Hangisi bugünün ruhuna daha yakın? Fotoğrafa bak, kararı ver.",
+        big: true,
+        a: [
+          { t: a.name, i: a.img, w: dishW(a.name) },
+          { t: b.name, i: b.img, w: dishW(b.name) }
+        ]
+      })),
+      results: FOOD_RESULTS
+    }];
+  }
+
   function buildFoodTests() {
     const dishes = (FOOD.dishes || []).filter((d) => d.img);
     const out = [];
     if (dishes.length < 8) return out;
+
+    out.push(...buildBigOMuBuMu(
+      "o-mu-bu-mu-turk", "O mu bu mu? — Türk yemekleri", "Türkiye",
+      "Türk mutfak dövüşü: iki büyük fotoğraf, tek karar. Döner mü menemen mi? Bakalım tarzın hangi tabakta saklı."
+    ));
+    out.push(...buildBigOMuBuMu(
+      "o-mu-bu-mu-lezzet", "O mu bu mu? — dünya yemekleri", null,
+      "Sushi mi burger mi? Ramen mi pilav mı? Dünyanın lezzetlerini kafa kafaya koyuyoruz; her kartta iki büyük fotoğraf var."
+    ));
 
     /* --- en iyi yemekler: fotoğraftan yemeği tanı --- */
     out.push({
@@ -512,6 +595,40 @@
           };
         }),
         results: bands("mutfak", "knowledge")
+      });
+    }
+
+    /* --- tabak eşleştir: tariften tabağa, cevaplar fotoğraflı --- */
+    const described = dishes.filter((d) => {
+      const text = (d.desc || "").split(" — ").slice(1).join(" — ").trim();
+      return text.length >= 22;
+    });
+    if (described.length >= 8 && dishes.length >= 8) {
+      out.push({
+        id: "tabak-esle",
+        title: "Tabak eşleştir",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(described[0].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#ffd84b",
+        desc: "İpucunu oku, doğru tabağın fotoğrafını seç. Bu turda cevaplar resimli!",
+        minutes: 3,
+        questions: described.map((target) => {
+          const others = shuffle(dishes.filter((d) => d.name !== target.name))
+            .slice(0, 3)
+            .map((d) => ({ t: d.name, i: d.img }));
+          const glue = (target.desc || "").split(" — ").slice(1).join(" — ").trim();
+          return {
+            q: `Bu tabak hangisi? ${target.cuisine} mutfağı · ipucu: ${glue}`,
+            fact: target.name,
+            wiki: target.page,
+            a: shuffle([{ t: target.name, i: target.img, c: true }, ...others])
+          };
+        }),
+        results: bands("tabak", "visual")
       });
     }
 
@@ -850,7 +967,7 @@
               Teste başla · <span id="startCount">${chosen}</span> soru <span class="btn-arrow">→</span>
             </button>
             ${test.dynamic || test.photoCover ? `<p class="intro-src">Görseller: Wikimedia Commons · Bilgiler: Vikipedi (CC BY-SA)</p>` : ""}
-            <p class="hint">Klavyeden 1–${maxOpts} tuşlarıyla da cevaplayabilirsin; bilgi testlerinde Enter ile sonraki soruya geçersin.</p>
+            <p class="hint">Klavyeden 1–${maxOpts} tuşlarıyla da cevaplayabilirsin; bilgi testlerinde Enter ile sonraki soruya geçersin, ← ile geri dönersin.</p>
           </div>
         </div>
 
@@ -904,6 +1021,14 @@
     renderQuestion();
   }
 
+  function quizBack() {
+    const quiz = state.quiz;
+    if (!quiz || quiz.locked || quiz.idx === 0) return;
+    quiz.idx--;
+    quiz.answers.length = quiz.idx;
+    renderQuestion();
+  }
+
   function renderQuestion() {
     const quiz = state.quiz;
     if (!quiz) return renderHome();
@@ -920,9 +1045,10 @@
     }
 
     view.innerHTML = `
-      <section class="quiz">
+      <section class="quiz${q.big ? " split" : ""}">
         <div class="quiz-top">
-          <a class="quiz-back" href="#/test/${test.id}" aria-label="Testten çık">←</a>
+          <a class="quiz-back" href="#/test/${test.id}" aria-label="Testten çık">✕</a>
+          ${idx > 0 ? `<button class="quiz-prev link" id="prevBtn" type="button" aria-label="Önceki soruya dön">← geri</button>` : ""}
           <div class="bar" role="progressbar" aria-valuenow="${idx}" aria-valuemin="0" aria-valuemax="${n}">
             <i style="width:${pct}%"></i>
           </div>
@@ -937,11 +1063,17 @@
             <figure class="q-media ${q.imageFit === "contain" ? "contain" : "photo"}${q.mediaDark ? " dark" : ""}">
               <img src="${esc(q.image)}" alt="Sorudaki görsel" loading="eager" referrerpolicy="no-referrer">
             </figure>` : ""}
-          <div class="opts" role="group" aria-label="Seçenekler">
-            ${q.a.map((o, i) => `
-              <button class="opt" data-i="${i}" style="--d:${i * 45}ms">
+          <div class="opts${q.big ? " big" : ""}" role="group" aria-label="Seçenekler">
+            ${q.a.map((o, i) => q.big && o.i ? `
+              <button class="opt bigvis" data-i="${i}" style="--d:${i * 60}ms">
+                <span class="opt-hero" style="background-image:url(&quot;${esc(String(o.i).replace(/&/g, "&amp;").replace(/"/g, "%22"))}&quot;)" role="img" aria-label="${esc(o.t || "")}"></span>
                 <span class="opt-key">${i + 1}</span>
                 <span class="opt-text">${esc(o.t)}</span>
+              </button>` : `
+              <button class="opt ${o.i ? "vis" : ""}" data-i="${i}" style="--d:${i * 45}ms">
+                <span class="opt-key">${i + 1}</span>
+                ${o.i ? `<span class="opt-thumb" style="background-image:url(&quot;${esc(String(o.i).replace(/&/g, "&amp;").replace(/"/g, "%22"))}&quot;)" role="img" aria-label="${esc(o.t || "")}"></span>` : ""}
+                <span class="opt-text${o.hideText ? " sr-only" : ""}">${esc(o.t)}</span>
               </button>`).join("")}
           </div>
         </div>
@@ -956,6 +1088,7 @@
     $$(".opt", view).forEach((btn) => {
       btn.addEventListener("click", () => choose(Number(btn.dataset.i)));
     });
+    $("#prevBtn")?.addEventListener("click", quizBack);
     $("#quitBtn").addEventListener("click", () => {
       if (confirm("Testten çıkmak istediğine emin misin? Cevaplar kaydedilmez.")) {
         state.quiz = null;
@@ -1458,7 +1591,7 @@
   const canInstall = typeof navigator !== "undefined" && "serviceWorker" in navigator
     && (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname));
   if (canInstall) {
-    navigator.serviceWorker.register("./sw.js").catch(() => { /* dosya sunucusuz açıldı */ });
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch(() => { /* dosya sunucusuz açıldı */ });
   }
 
   /* ---------------------------------------------------------- yönlendirme */
@@ -1505,6 +1638,7 @@
       state.quiz = null;
       location.hash = "#/";
     }
+    if (e.key === "ArrowLeft") quizBack();
   });
 
   route();

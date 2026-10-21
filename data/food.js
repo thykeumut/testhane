@@ -4,7 +4,7 @@
    Kaynak: Vikipedi (CC BY-SA) ve Wikimedia Commons
    ============================================================ */
 
-const FOOD_DB = {
+window.FOOD_DB = {
  dishes: [
  {
   "name": "Pizza",
@@ -306,6 +306,195 @@ const FOOD_DB = {
   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Dolsot-bibimbap.jpg/960px-Dolsot-bibimbap.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
   "page": "https://tr.wikipedia.org/wiki/Bibimbap",
   "desc": "bibimbap — Kore yemeği"
+ },
+ {
+  "name": "Gyoza",
+  "cuisine": "Japonya",
+  "img": "https://upload.wikimedia.org/wikipedia/commons/8/88/%E5%8F%B0%E7%81%A3%E5%8D%97%E6%8A%95%E8%8D%89%E5%B1%AF%E6%B0%B4%E9%A4%83Nantou%2C_Taiwan_Caotun_dumplings.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled&width=640",
+  "page": "https://en.wikipedia.org/wiki/Jiaozi",
+  "desc": "gyoza — Chinese dumplings"
+ },
+ {
+  "name": "Şnitzel",
+  "cuisine": "Avusturya",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Schnitzel.JPG/960px-Schnitzel.JPG?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/%C5%9Enitzel",
+  "desc": "şnitzel — İnce kesilmiş et"
+ },
+ {
+  "name": "Balık ve cips",
+  "cuisine": "Birleşik Krallık",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Fish_and_chips_blackpool.jpg/960px-Fish_and_chips_blackpool.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://en.wikipedia.org/wiki/Fish_and_chips",
+  "desc": "balık ve cips — British fried fish and fried potato dish"
+ },
+ {
+  "name": "Ceviçe",
+  "cuisine": "Peru",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Cebiche_de_corvina.JPG/960px-Cebiche_de_corvina.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://en.wikipedia.org/wiki/Ceviche",
+  "desc": "ceviçe — Dish of marinated raw seafood"
+ },
+ {
+  "name": "Tiramisu",
+  "cuisine": "İtalya",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Tiramisu_-_Raffaele_Diomede.jpg/960px-Tiramisu_-_Raffaele_Diomede.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Tiramisu",
+  "desc": "tiramisu — İtalyan tatlısı"
+ },
+ {
+  "name": "Poutine",
+  "cuisine": "Kanada",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Food_at_WIkimanian_2017_02.jpg/960px-Food_at_WIkimanian_2017_02.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Poutine",
+  "desc": ""
+ },
+ {
+  "name": "Kuskus",
+  "cuisine": "Kuzey Afrika",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Couscous-1.jpg/960px-Couscous-1.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Kuskus",
+  "desc": ""
+ },
+ {
+  "name": "Pastel de nata",
+  "cuisine": "Portekiz",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Pasteis_de_Belem.jpg/960px-Pasteis_de_Belem.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Pastel_de_nata",
+  "desc": ""
+ },
+ {
+  "name": "Pavlova",
+  "cuisine": "Avustralya",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Pavlova_dessert.JPG/960px-Pavlova_dessert.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://en.wikipedia.org/wiki/Pavlova",
+  "desc": "pavlova — Meringue-based dessert"
+ },
+ {
+  "name": "Mücver",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Turkish_latkes.jpg/960px-Turkish_latkes.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/M%C3%BCcver",
+  "desc": "mücver — Türk mutfağından kızartma kabak (sakız kabağı) yemeği"
+ },
+ {
+  "name": "Karnıyarık",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Karn%C4%B1yar%C4%B1k_-_Lunch_at_Yanyali_Fehmi_Lokantasi_%286421044715%29.jpg/960px-Karn%C4%B1yar%C4%B1k_-_Lunch_at_Yanyali_Fehmi_Lokantasi_%286421044715%29.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Karn%C4%B1yar%C4%B1k",
+  "desc": "karnıyarık — Türk mutfağında soğanlı kıyma ile doldurulup fırında pişirilen patlıcan yemeği"
+ },
+ {
+  "name": "İçli köfte",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Kibbeh3.jpg/960px-Kibbeh3.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/%C4%B0%C3%A7li_k%C3%B6fte",
+  "desc": "içli köfte — dışı bulgur içi kıyma dolgulu olan, kızartılmış veya haşlanmış topak"
+ },
+ {
+  "name": "Kısır",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Kisir.jpg/960px-Kisir.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://en.wikipedia.org/wiki/K%C4%B1s%C4%B1r",
+  "desc": "kısır — Turkish bulgur salad dish"
+ },
+ {
+  "name": "Lahmacun",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Lahmacun.jpg/960px-Lahmacun.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Lahmacun",
+  "desc": "lahmacun — Orta Doğu mutfağından bir yemek"
+ },
+ {
+  "name": "Pide",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/Pita_Bread.jpg/960px-Pita_Bread.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Pide",
+  "desc": "pide — fırında yapılan geleneksel bir ekmek"
+ },
+ {
+  "name": "Börek",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Meat_burek_%28GAK_bakery%2C_Belgrade%2C_Serbia%29.jpg/960px-Meat_burek_%28GAK_bakery%2C_Belgrade%2C_Serbia%29.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/B%C3%B6rek",
+  "desc": "börek — Türk ve Osmanlı mutfağından hamur işi"
+ },
+ {
+  "name": "Lokum",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Turkish_delight_from_Istanbul.jpg/960px-Turkish_delight_from_Istanbul.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Lokum",
+  "desc": "lokum — geleneksel Türk tatlısı"
+ },
+ {
+  "name": "Boza",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/T%C3%B6r%C3%B6kboza.JPG/960px-T%C3%B6r%C3%B6kboza.JPG?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Boza",
+  "desc": "boza — bir tür mayalı tahıl içeceği"
+ },
+ {
+  "name": "Aşure",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/A%C5%9Fure.jpg/960px-A%C5%9Fure.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/A%C5%9Fure",
+  "desc": "aşure — Türk ve komşu ülkeler mutfağından jöleli bir tatlı"
+ },
+ {
+  "name": "Tavuk göğsü",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4d/Tavuk_G%C3%B6%C4%9Fs%C3%BC_Dessert.jpg/960px-Tavuk_G%C3%B6%C4%9Fs%C3%BC_Dessert.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Tavukg%C3%B6%C4%9Fs%C3%BC",
+  "desc": "tavuk göğsü — Türk mutfağından geleneksel tatlı"
+ },
+ {
+  "name": "Kokoreç",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Kokore%C3%A7.JPG/960px-Kokore%C3%A7.JPG?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Kokore%C3%A7",
+  "desc": ""
+ },
+ {
+  "name": "İmam bayıldı",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/%C4%B0mam_bay%C4%B1ld%C4%B1_AvL.JPG/960px-%C4%B0mam_bay%C4%B1ld%C4%B1_AvL.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://en.wikipedia.org/wiki/%C4%B0mam_bay%C4%B1ld%C4%B1",
+  "desc": "İmam bayıldı — Turkish aubergine dish"
+ },
+ {
+  "name": "Kumpir",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Kumpir_-_Turkish_Cuisine.jpg/960px-Kumpir_-_Turkish_Cuisine.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Kumpir",
+  "desc": "kumpir — patatesle yapılan Türk yemeği"
+ },
+ {
+  "name": "Mercimek çorbası",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Mercimek_soup_Istanbul.jpg/960px-Mercimek_soup_Istanbul.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Mercimek_%C3%A7orbas%C4%B1",
+  "desc": "mercimek çorbası — mercimekle yapılan bir tür çorba"
+ },
+ {
+  "name": "Helva",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/PistHalva.jpg/960px-PistHalva.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Helva",
+  "desc": "helva — Bir çeşit tatlı"
+ },
+ {
+  "name": "Pilav",
+  "cuisine": "Türkiye",
+  "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Pilaf_of_Turkey_%28as_accompany_dish%29.jpg/960px-Pilaf_of_Turkey_%28as_accompany_dish%29.jpg?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Pilav",
+  "desc": "pilav — pirinç temelli yemek"
+ },
+ {
+  "name": "Balık ekmek",
+  "cuisine": "Türkiye",
+  "img": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Fish_sandwich%2C_Istanbul%2C_Turkey.JPG?utm_source=tr.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled&width=640",
+  "page": "https://tr.wikipedia.org/wiki/Bal%C4%B1k_ekmek",
+  "desc": "balık ekmek — ekmek içinde kızarmış veya ızgara balık"
  },
  {
   "name": "Feijoada",
