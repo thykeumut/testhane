@@ -971,7 +971,7 @@
       el.innerHTML = rows.length
         ? rows.map((e) => `
             <li>
-              <b>${esc((e.n || "").slice(0, 24))}</b>
+              <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}"><b>${esc((e.n || "").slice(0, 24))}</b></a>
               <span>${esc(`${e.ti || ""} — ${e.r || ""}`)}</span>
               <i>${relDate(e.at)}</i>
             </li>`).join("")
@@ -1422,7 +1422,7 @@
         const pct = test.mode === "trivia" && typeof e.s === "number" ? `%${e.s} · ` : "";
         return `
             <li>
-              <b>${esc((e.n || "").slice(0, 24) || "anonim")}</b>
+              <b data-name="${esc(e.n || "")}">${esc((e.n || "").slice(0, 24) || "anonim")}</b>
               <span>${esc(showTest ? `${e.ti || ""} — ${e.r}` : e.r || "")}</span>
               <i>${pct}${relDate(e.at)}</i>
             </li>`;
@@ -1432,6 +1432,15 @@
         ? rows.join("")
         : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol, altta adını yaz 👇</li>`;
     });
+    // tahta satırlarında isim tıklanabilir → profil
+    const tahtaWrap = $("#tahtaList");
+    if (tahtaWrap) {
+      tahtaWrap.addEventListener("click", (e) => {
+        const who = e.target.closest("b");
+        if (!who || !who.dataset.name) return;
+        location.hash = `#/profil/${encodeURIComponent(who.dataset.name)}`;
+      });
+    }
     $("#dlBtn").addEventListener("click", () => downloadCard(test, result, attempt, $("#dlBtn")));
     $("#shareBtn").addEventListener("click", () => shareResult(test, result, attempt, $("#shareBtn")));
 
@@ -1441,6 +1450,52 @@
       if (good && !reduceMotion) confetti();
     }
     window.scrollTo(0, 0);
+  }
+
+  /* ---------------------------------------------------------- kişi profili
+     Tahtadan o isme ait tüm kayıtlar: kaç tur, kaç test, ortalama doğruluk. */
+  function renderProfile(name) {
+    document.title = `${name} — TESTHANE`;
+    view.innerHTML = `
+      <section class="intro">
+        <a class="link-back" href="#/">← tüm testler</a>
+        <div class="intro-card profile-card">
+          <p class="kicker">kişi profili · tahtadan canlı veri</p>
+          <h1>${esc(name)}</h1>
+          <div class="profile-stats" id="profileStats"></div>
+          <ul class="tahta" id="profileRows"><li class="tahta-empty">yükleniyor…</li></ul>
+        </div>
+      </section>
+    `;
+    window.scrollTo(0, 0);
+    boardFetch().then((list) => {
+      const statsEl = $("#profileStats");
+      const rowsEl = $("#profileRows");
+      if (!rowsEl) return;
+      const rows = list.filter((e) => e && ((e.n || "").toLocaleLowerCase("tr") === name.toLocaleLowerCase("tr")));
+      if (!rows.length) {
+        rowsEl.innerHTML = `<li class="tahta-empty">Bu isimde kayıt yok — belki henüz testini tamamlamadı 🤔</li>`;
+        return;
+      }
+      const trivia = rows.filter((e) => typeof e.s === "number");
+      const avg = trivia.length ? Math.round(trivia.reduce((n, e) => n + e.s, 0) / trivia.length) : null;
+      const tests = new Set(rows.map((e) => e.t));
+      const last = Math.max(...rows.map((e) => e.at || 0));
+      if (statsEl) {
+        statsEl.innerHTML = `
+          <div class="stat"><b>${rows.length}</b><span>çözülen tur</span></div>
+          <div class="stat"><b>${tests.size}</b><span>farklı test</span></div>
+          ${avg !== null ? `<div class="stat"><b>%${avg}</b><span>ort. doğruluk</span></div>` : ""}
+          <div class="stat"><b>${relDate(last)}</b><span>son çıkış</span></div>
+        `;
+      }
+      rowsEl.innerHTML = rows.map((e) => `
+            <li>
+              <b><a href="#/test/${esc(e.t)}">${esc(e.ti || e.t)}</a></b>
+              <span>${esc(e.r || "")}</span>
+              <i>${typeof e.s === "number" ? `%${e.s} · ` : ""}${relDate(e.at)}</i>
+            </li>`).join("");
+    });
   }
 
   /* ---------------------------------------------------------- paylaşım */
@@ -1785,6 +1840,7 @@
     if (parts[0] === "test" && parts[1]) return renderIntro(byId(parts[1]));
     if (parts[0] === "oyna" && parts[1]) return startQuiz(byId(parts[1]), Number(parts[2]) || 0);
     if (parts[0] === "sonuc" && parts[1] && parts[2]) return renderResult(byId(parts[1]), parts[2]);
+    if (parts[0] === "profil" && parts[1]) return renderProfile(decodeURIComponent(parts[1]));
     state.quiz = null;
     return renderHome();
   }

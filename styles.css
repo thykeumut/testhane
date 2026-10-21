@@ -1740,6 +1740,44 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
 .tahta li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tahta li i { font-style: normal; font-size: .72rem; color: var(--ink-3); white-space: nowrap; }
 .tahta-empty { justify-content: center; color: var(--ink-3); }
+.tahta a.who, .tahta b a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.tahta a.who:hover b, .tahta b a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1rem 0;
+  background: color-mix(in srgb, var(--paper) 60%, transparent);
+}
+.profile-stats .stat {
+  padding: .55rem .6rem;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+.profile-stats .stat + .stat { border-left: 1px solid var(--line); }
+.profile-stats .stat b {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.profile-stats .stat span {
+  font-size: .68rem;
+  color: var(--ink-3);
+  letter-spacing: .02em;
+}
+@media (max-width: 480px) {
+  .profile-stats { grid-template-columns: repeat(2, 1fr); }
+  .profile-stats .stat:nth-child(n + 3) { border-left: 0; border-top: 1px solid var(--line); }
+  .profile-stats .stat:nth-child(odd) { border-left: 0; }
+}
 
 /* ana sayfa feed'i */
 .home-feed {
