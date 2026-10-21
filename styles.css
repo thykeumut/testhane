@@ -1694,3 +1694,49 @@ a:hover .btn-arrow, .btn:hover .btn-arrow { transform: translateX(4px); }
 }
 .card-meta .card-go { margin-left: auto; }
 .card-meta { gap: .28rem; }
+
+/* ---------------------------------------------------------- takma ad + tahta */
+.hero-name {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .78rem;
+  color: var(--ink-2);
+  padding: .3rem .6rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+}
+.hero-name input {
+  width: 7.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  padding: 0;
+}
+.hero-name input:focus { outline: none; }
+.hero-name input::placeholder { color: var(--ink-3); }
+
+.tahta {
+  list-style: none;
+  margin: .9rem 0 0;
+  padding: .55rem .7rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  text-align: left;
+}
+.tahta li {
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  padding: .22rem 0;
+  font-size: .8rem;
+  color: var(--ink-2);
+}
+.tahta li + li { border-top: 1px dotted var(--line); }
+.tahta li b { color: var(--ink); font-weight: 700; white-space: nowrap; }
+.tahta li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tahta li i { font-style: normal; font-size: .72rem; color: var(--ink-3); white-space: nowrap; }
+.tahta-empty { justify-content: center; color: var(--ink-3); }

@@ -772,6 +772,37 @@
     return `${Math.max(1, Math.floor((Date.now() - ts) / 86400000))} gün önce`;
   }
 
+  /* ---------------------------------------------------------- paylaşılan tahta
+     Sonuçlar anonim bir textdb.dev hücresinde saklanır: isim + test + sonuç.
+     Çevrimdışıyken sessizce boş listeye düşer. */
+  const BOARD_URL = "https://textdb.dev/api/data/thboard2x9k41";
+
+  async function boardFetch() {
+    const ctrl = new AbortController();
+    const kill = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(`${BOARD_URL}?t=${Date.now()}`, { cache: "no-store", signal: ctrl.signal });
+      const arr = JSON.parse(await res.text());
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    } finally {
+      clearTimeout(kill);
+    }
+  }
+
+  async function boardPush(entry) {
+    const list = await boardFetch();
+    list.unshift(entry);
+    try {
+      await fetch(BOARD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(list.slice(0, 120))
+      });
+    } catch (e) { /* sessizce geç; sonuç yerel zaten kayıtlı */ }
+  }
+
   /* ---------------------------------------------------------- sonuç hesaplama */
   function computeOutcome(test, questions, answers) {
     if (test.mode === "trivia") {
@@ -846,6 +877,7 @@
               <a class="btn btn-ghost daily" href="#/test/${daily.id}">
                 <span class="daily-tag">günün testi</span>${esc(daily.title)}
               </a>
+              <label class="hero-name" for="heroName">takma ad <input id="heroName" maxlength="24" placeholder="misafir" value="${esc(store.name)}" autocomplete="off"></label>
             </div>
             <p class="hero-source">
               ${flagCount} ülke bayrağı, ${WIKI.people.length} portre, ${WIKI.places.length} tarihî yer,
@@ -907,6 +939,15 @@
     $("#randomBtn").addEventListener("click", () => {
       const t = allTests()[Math.floor(Math.random() * allTests().length)];
       location.hash = `#/test/${t.id}`;
+    });
+    $("#heroName").addEventListener("input", (e) => {
+      store.name = e.target.value.slice(0, 24);
+      saveStore();
+      if (store.name && state.pendingEntry) {
+        state.pendingEntry.n = store.name;
+        boardPush(state.pendingEntry);
+        state.pendingEntry = null;
+      }
     });
     $("#search").addEventListener("input", (e) => {
       state.query = e.target.value;
@@ -1255,6 +1296,21 @@
     state.celebrated = false;
     state.quiz = null;
     location.hash = `#/sonuc/${test.id}/${outcome.result.id}`;
+    /* paylaşılan tahtaya yaz: isim yoksa sonuç ekranında isim girilince yazılır */
+    const entry = {
+      n: store.name || "",
+      t: test.id,
+      ti: test.title,
+      r: outcome.result.title,
+      s: outcome.pct,
+      at: Date.now()
+    };
+    if (store.name) {
+      state.pendingEntry = null;
+      boardPush(entry);
+    } else {
+      state.pendingEntry = entry;
+    }
   }
 
   /* ---------------------------------------------------------- sonuç */
@@ -1295,6 +1351,8 @@
               <input id="nameInput" maxlength="24" placeholder="Adın" value="${esc(store.name)}" autocomplete="off">
             </label>
 
+            <ul class="tahta" id="tahtaList" aria-live="polite"><li class="tahta-empty">“bu testi çözenler” yükleniyor…</li></ul>
+
             <div class="result-actions">
               <button class="btn btn-primary" id="dlBtn">Kartı indir <span>PNG</span></button>
               <button class="btn btn-ghost" id="shareBtn">Paylaş</button>
@@ -1319,6 +1377,28 @@
     $("#nameInput").addEventListener("input", (e) => {
       store.name = e.target.value.slice(0, 24);
       saveStore();
+      /* isim ilk kez yazıldıysa bekleyen sonucu tahtaya gönder */
+      if (store.name && state.pendingEntry) {
+        state.pendingEntry.n = store.name;
+        boardPush(state.pendingEntry);
+        state.pendingEntry = null;
+      }
+    });
+    boardFetch().then((list) => {
+      const el = $("#tahtaList");
+      if (!el) return;
+      const mine = list.filter((e) => e && e.t === test.id).slice(0, 8);
+      el.innerHTML = mine.length
+        ? mine.map((e) => {
+            const pct = test.mode === "trivia" && typeof e.s === "number" ? `%${e.s} · ` : "";
+            return `
+            <li>
+              <b>${esc((e.n || "").slice(0, 24) || "anonim")}</b>
+              <span>${esc(e.r || "")}</span>
+              <i>${pct}${relDate(e.at)}</i>
+            </li>`;
+          }).join("")
+        : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol, altta adını yaz 👇</li>`;
     });
     $("#dlBtn").addEventListener("click", () => downloadCard(test, result, attempt, $("#dlBtn")));
     $("#shareBtn").addEventListener("click", () => shareResult(test, result, attempt, $("#shareBtn")));

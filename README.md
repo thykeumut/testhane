@@ -5,6 +5,7 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 ## Ne var?
 
 - **36 test** — 18 el yazımı + 12 Vikipedi beslemeli + 6 yemek testi
+- **Ortak tahta**: test sonunda adını yaz; kim ne sonuç aldı görsün (`textdb.dev`, sunucusuz)
 - **~1.520 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
