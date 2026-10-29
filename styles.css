@@ -1177,6 +1177,7 @@ html[data-theme="dark"] .card { border-color: var(--line); }
   grid-template-columns: 1fr 1fr;
   gap: 3px;
   height: calc(100vh - 290px);
+  height: calc(100dvh - 290px);
   min-height: 360px;
 }
 .opts.big .opt.bigvis {
@@ -1211,6 +1212,10 @@ html[data-theme="dark"] .card { border-color: var(--line); }
   z-index: 1;
   align-self: center;
   flex: 0 0 auto;
+  max-width: calc(100% - 1.4rem);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   margin-bottom: .85rem;
   padding: .36rem .85rem;
   border: 1px solid var(--line-strong);
@@ -1617,6 +1622,20 @@ html[data-theme="dark"] .card { border-color: var(--line); }
   .q-media img { max-height: 285px; }
   .q-media.contain img { max-height: 335px; }
   .opt { font-size: .84rem; }
+  /* büyük görselli "O mu bu mu": mobilde ekranı bozmayacak şekilde */
+  .quiz.split { padding-top: .8rem; }
+  .quiz.split .q-text { font-size: 1.2rem; margin-bottom: .45rem; }
+  .opts.big { gap: 5px; height: auto; min-height: 0; }
+  .opts.big .opt.bigvis {
+    aspect-ratio: 2.9 / 3.8;
+    min-height: 0;
+    border-radius: 11px;
+  }
+  .opts.big .opt.bigvis .opt-text {
+    margin-bottom: .55rem;
+    font-size: .72rem;
+    padding: .28rem .62rem;
+  }
   .quiz-foot { font-size: .62rem; }
   .result { padding-top: 1.3rem; }
   .result-card { border-radius: 20px; }

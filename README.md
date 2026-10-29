@@ -4,9 +4,9 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **36 test** — 18 el yazımı + 12 Vikipedi beslemeli + 6 yemek testi
+- **50 test** — 18 el yazımı + 24 görselli bilgi/kişilik testi + 8 yemek testi
 - **Ortak tahta**: test sonunda adını yaz; kim ne sonuç aldı görsün (`textdb.dev`, sunucusuz)
-- **~1.520 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
+- **~2.280 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
   - 83 portre (bilim insanları, yazarlar, ressamlar/müzisyenler, tarihî kişiler)
@@ -67,6 +67,20 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 | Tabak eşleştir (resimli cevaplar) | bilgi | Vikipedi / Commons |
 | O mu bu mu? — Türk yemekleri (büyük görselli) | kişilik | Vikipedi / Commons |
 | O mu bu mu? — dünya yemekleri (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — sokak lezzetleri (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — ev sofrası (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — tatlılar (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — hamur işi (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — hayvanlar (büyük görselli) | kişilik | Vikipedi / Commons |
+| O mu bu mu? — seyahat (büyük görselli) | kişilik | Vikipedi |
+| O mu bu mu? — portreler (büyük görselli) | kişilik | Vikipedi |
+| Bu yer hangi ülkede? | bilgi | Vikipedi |
+| Bu portre hangi meslekten? | bilgi | Vikipedi |
+| Bu hayvanın adresi ne? (deniz/gökyüzü/kara) | bilgi | Vikipedi |
+| Bu foto neyin nesi? (görsel karışık) | bilgi | tüm havuzlar |
+| Tatlı mı tuzlu mu? | bilgi | Vikipedi / Commons |
+| Bayrağı görün, başkent bil | bilgi | Wikidata |
+| Bu bayrak hangi kıtadan? | bilgi | Wikidata |
 | Büyük karışık test | bilgi | tüm havuzlar |
 
 ## Çalıştırma

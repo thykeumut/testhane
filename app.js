@@ -146,7 +146,21 @@
     "hangi-donemde-yasamalisin": "crown",
     "hangi-tatil-tipisin": "compass",
     "hangi-film-turu-sensin": "film",
-    "hangi-hayvan-sensin": "paw"
+    "hangi-hayvan-sensin": "paw",
+    "wiki-yer-ulke": "pin",
+    "wiki-portre-alan": "briefcase",
+    "gorsel-karisik": "shuffle",
+    "tatli-mi-tuzlu": "utensils",
+    "o-mu-bu-mu-hayvan": "paw",
+    "o-mu-bu-mu-yol": "compass",
+    "o-mu-bu-mu-sokak": "shuffle",
+    "o-mu-bu-mu-sofra": "utensils",
+    "o-mu-bu-mu-portre": "users",
+    "o-mu-bu-mu-tatli": "utensils",
+    "o-mu-bu-mu-hamur": "utensils",
+    "hayvan-adresi": "paw",
+    "wiki-bayrak-baskent": "flag",
+    "wiki-bayrak-kita": "globe"
   };
 
   const CAT_ICONS = { "kişilik": "spark", "bilgi": "star", "eğlence": "tv", "ilişki": "heart" };
@@ -663,7 +677,418 @@
     return out;
   }
 
-  /* --- el yapımı testlere ek sorular ve Wikimedia fotoğrafları --- */
+  /* ---------------------------------------------------------- ekstra görselli testler
+     Yeni tur: havuzu WIKI / FOOD verisinden besleyen fotoğraf ağırlıklı testler.
+     Dinamik üretilir; derleme ya da yeni veri dosyası gerekmez. */
+  function buildPairTest({ id, title, pool, weightOf, results, desc, accent, qText, sample = 10 }) {
+    const usable = pool.filter((x) => x.img && weightOf(x));
+    if (usable.length < 10) return [];
+    const queue = shuffle(usable);
+    const pairs = [];
+    for (let i = 0; i < queue.length - 1; i += 2) pairs.push([queue[i], queue[i + 1]]);
+    if (pairs.length < 5) return [];
+    return [{
+      id,
+      title,
+      category: "eğlence",
+      mode: "personality",
+      dynamic: true,
+      sample,
+      cover: coverPhoto(pairs[0][0].img, "rgba(10,10,12,.5)"),
+      photoCover: true,
+      accent,
+      desc,
+      minutes: 3,
+      questions: pairs.map(([a, b]) => ({
+        q: qText,
+        big: true,
+        a: [
+          { t: a.name, i: a.img, w: weightOf(a) },
+          { t: b.name, i: b.img, w: weightOf(b) }
+        ]
+      })),
+      results
+    }];
+  }
+
+  function buildExtraVisualTests() {
+    const out = [];
+
+    /* --- 1) bu yer hangi ülkede? --- */
+    const mekan = WIKI.places.filter((p) => p.img && p.country);
+    const ulkeler = [...new Set(mekan.map((p) => p.country))];
+    if (mekan.length >= 8 && ulkeler.length >= 4) {
+      out.push({
+        id: "wiki-yer-ulke",
+        title: "Bu yer hangi ülkede?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(mekan[mekan.length - 4]?.img || mekan[0].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#4b9dff",
+        desc: `${mekan.length} mekân fotoğrafı, ${ulkeler.length} ülke. Manzaradan memleketi tahmin et.`,
+        minutes: 3,
+        questions: mekan.map((p) => ({
+          q: "Fotoğraftaki yer hangi ülkede?",
+          image: p.img,
+          imageFit: "cover",
+          fact: `${p.name} · ${p.city}`,
+          wiki: p.page,
+          a: choices(p.country, ulkeler)
+        })),
+        results: bands("yerulke", "visual")
+      });
+    }
+
+    /* --- 2) portreden meslek alanı --- */
+    const FIELD_LABELS = {
+      bilim: "Bilim insanı",
+      edebiyat: "Yazar / edebiyatçı",
+      sanat: "Ressam / müzisyen",
+      tarih: "Devlet adamı / komutan"
+    };
+    const portu = WIKI.people.filter((p) => p.img && FIELD_LABELS[p.field]);
+    if (portu.length >= 8) {
+      const alanlar = Object.keys(FIELD_LABELS);
+      out.push({
+        id: "wiki-portre-alan",
+        title: "Bu portre hangi meslekten?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(portu[17 % portu.length].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#b79cff",
+        desc: `${portu.length} portre, dört sahne: bilim, edebiyat, sanat, devlet. Yüzden mesleği oku.`,
+        minutes: 3,
+        questions: portu.map((p) => ({
+          q: "Bu portre hangi sahnenin insanı?",
+          image: p.img,
+          imageFit: "contain",
+          mediaDark: true,
+          fact: p.desc || p.fact,
+          wiki: p.page,
+          a: choices(p.field, alanlar, (f) => FIELD_LABELS[f])
+        })),
+        results: bands("portre", "visual")
+      });
+    }
+
+    /* --- 3) görsel karışık: hayvan mı, yemek mi, yer mi, gezegen mi? --- */
+    const gorselTurler = [
+      { label: "Hayvan", arr: (WIKI.animals || []).filter((x) => x.img), fit: "cover", dark: false },
+      { label: "Yemek", arr: (FOOD.dishes || []).filter((x) => x.img), fit: "cover", dark: false },
+      { label: "Tarihî yer", arr: WIKI.places.filter((x) => x.img), fit: "cover", dark: false },
+      { label: "Gezegen", arr: WIKI.planets.filter((x) => x.img), fit: "contain", dark: true }
+    ].filter((c) => c.arr.length >= 4);
+    const gorselEtiketler = gorselTurler.map((c) => c.label);
+    if (gorselTurler.length >= 3) {
+      out.push({
+        id: "gorsel-karisik",
+        title: "Bu foto neyin nesi?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        hero: true,
+        sample: 12,
+        cover: coverPhoto((gorselTurler[1].arr[3] || gorselTurler[0].arr[0]).img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#c9f23c",
+        desc: `${gorselTurler.reduce((n, c) => n + c.arr.length, 0)} karışık fotoğraf: hayvan, yemek, tarihî yer ve gezegen tek havuzda. Türünü ayırt edebilir misin?`,
+        minutes: 4,
+        questions: gorselTurler.flatMap((tur) => tur.arr.map((item) => ({
+          q: "Bak: bu fotoğraf hangi türden?",
+          image: item.img,
+          imageFit: tur.fit,
+          mediaDark: tur.dark,
+          fact: item.name,
+          wiki: item.page,
+          a: choices(tur.label, gorselEtiketler)
+        }))),
+        results: bands("gorsel", "visual")
+      });
+    }
+
+    /* --- 4) tatlı mı tuzlu mu? --- */
+    const sweets = new Set([
+      "baklava", "lokum", "boza", "aşure", "tavuk göğsü", "helva",
+      "tiramisu", "pastel de nata", "pavlova", "churros"
+    ]);
+    const tabaklar = (FOOD.dishes || []).filter((d) => d.img);
+    if (tabaklar.length >= 8) {
+      out.push({
+        id: "tatli-mi-tuzlu",
+        title: "Tatlı mı tuzlu mu?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(tabaklar[Math.floor(tabaklar.length / 2)].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#ffd84b",
+        desc: `${tabaklar.length} tabak fotoğrafı. Karar ver: bu tabak tatlı sofrasının mı, ana yemeğin mi?`,
+        minutes: 3,
+        questions: tabaklar.map((d) => {
+          const sweet = sweets.has(d.name.toLocaleLowerCase("tr"));
+          const dogru = sweet ? "Tatlı" : "Tuzlu";
+          return {
+            q: "Bu tabak tatlı mı tuzlu mu? Fotoğrafa bak, karar ver.",
+            image: d.img,
+            imageFit: "cover",
+            fact: `${d.name} · ${d.cuisine} mutfağı`,
+            wiki: d.page,
+            a: shuffle([{ t: dogru, c: true }, { t: sweet ? "Tuzlu" : "Tatlı" }])
+          };
+        }),
+        results: bands("tatlituz", "knowledge")
+      });
+    }
+
+    /* --- 5) O mu bu mu? — hayvanlar --- */
+    const ANIMAL_W = {
+      "Aslan": { patron: 3 }, "Kaplan": { patron: 3 }, "Fil": { kadim: 2, patron: 1 },
+      "Zürafa": { zarif: 3 }, "Dev panda": { isik: 3 }, "Koala": { isik: 3 },
+      "Kanguru": { isik: 2, zarif: 1 }, "Penguen": { isik: 3 }, "Kutup ayısı": { patron: 2, kadim: 1 },
+      "Kurt": { kadim: 2, patron: 1 }, "Tilki": { zarif: 2, kadim: 1 }, "Kartal": { patron: 2, zarif: 1 },
+      "Baykuş": { kadim: 2, zarif: 1 }, "Mavi balina": { kadim: 3 }, "Köpekbalığı": { patron: 3 },
+      "Ahtapot": { zarif: 1, kadim: 2 }, "Denizanası": { kadim: 3 }, "Timsahlar": { kadim: 2, patron: 1 },
+      "Yılan": { patron: 1, kadim: 2 }, "Kurbağa": { isik: 1, kadim: 1 }, "Kelebek": { zarif: 3 },
+      "Arı": { isik: 2, kadim: 1 }, "Karınca": { kadim: 2, isik: 1 }, "Örümcek": { kadim: 2, patron: 1 },
+      "Tavşan": { isik: 3 }, "Sincap": { isik: 3 }, "Deve": { kadim: 2, zarif: 1 },
+      "Gergedan": { patron: 2, kadim: 1 }, "Su aygırı": { kadim: 2, patron: 1 },
+      "Çita": { zarif: 2, patron: 1 }, "Pars": { zarif: 2, patron: 1 },
+      "Şempanze": { kadim: 2, isik: 1 }, "Goril": { patron: 2, kadim: 1 },
+      "Flamingo": { zarif: 3 }, "Tavus kuşu": { zarif: 3 },
+      "Papağan": { isik: 2, zarif: 1 }, "Karga": { kadim: 2, zarif: 1 }
+    };
+    const ANIMAL_RESULTS = [
+      { id: "patron", title: "Sahne ışığı", desc: "Odaya girer girmez fark ediliyorsun; kükremeye gerek yok. Aslan gibi: otorite görünür, hakkı olan alır.", tags: ["güçlü", "kararlı"] },
+      { id: "zarif", title: "Zarif akıntı", desc: "Hiç koşmadan yetişiyorsun. Zarafet senin hızın: kelebek gibi görünen kimseye çitayı geçen sensin.", tags: ["akıcı", "stil"] },
+      { id: "isik", title: "Işık kaynağı", desc: "Penguen gibi kalabalığı toplayan sensin; sevimli muhabbetinin arkasında herkes yarım kalır.", tags: ["sevimli", "sıcak"] },
+      { id: "kadim", title: "Sessiz efsane", desc: "Fil gibi: en kalabalık odada bile gürültüsüz yer alır, sonra herkes sana bakar. Ağırlığın sessizlikte.", tags: ["sakin", "derin"] }
+    ];
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-hayvan",
+      title: "O mu bu mu? — hayvanlar",
+      pool: (WIKI.animals || []),
+      weightOf: (a) => ANIMAL_W[a.name] || null,
+      results: ANIMAL_RESULTS,
+      accent: "#6ee7d8",
+      qText: "Hangisi senin ruhuna daha yakın? İki fotoğraf, tek seçim.",
+      desc: "Aslan mı penguen mi? İki büyük hayvan fotoğrafı tarafında; her seçim ruhundaki hangi canlının baskın olduğunu gösteriyor."
+    }));
+
+    /* --- 6) O mu bu mu? — seyahat --- */
+    const PLACE_VIBE = {
+      "Ayasofya": "zaman", "Topkapı Sarayı": "zaman", "Galata Kulesi": "zaman",
+      "Sultanahmet Camii": "zaman", "Dolmabahçe Sarayı": "zaman", "Kız Kulesi": "zaman",
+      "Rumeli Hisarı": "zaman", "Kapadokya": "dogam", "Pamukkale": "dogam",
+      "Efes": "zaman", "Göbeklitepe": "gizem", "Nemrut Dağı": "gizem",
+      "Sümela Manastırı": "zaman", "Aspendos": "zaman", "Troya": "gizem",
+      "Anıtkabir": "zaman", "Bergama": "zaman", "Safranbolu": "sehir",
+      "Divriği Ulu Camii ve Darüşşifası": "zaman", "İshak Paşa Sarayı": "zaman",
+      "Zeugma": "gizem", "Hasankeyf": "gizem", "Uzungöl": "dogam",
+      "Balıklıgöl": "dogam", "Alanya Kalesi": "zaman", "Afrodisias": "zaman",
+      "Aizanoi": "gizem", "Sardis": "gizem", "Eyfel Kulesi": "sehir",
+      "Kolezyum": "zaman", "Pisa Kulesi": "zaman", "Machu Picchu": "gizem",
+      "Gize Piramitleri": "gizem", "Tac Mahal": "zaman", "Çin Seddi": "gizem",
+      "Özgürlük Heykeli": "sehir", "Big Ben": "sehir", "Sagrada Família": "zaman",
+      "Petra": "gizem", "Stonehenge": "gizem", "Hattuşa": "gizem",
+      "Göreme": "dogam", "Ani": "gizem", "Perge": "gizem", "Assos": "gizem",
+      "Uçhisar Kalesi": "zaman", "Yazılıkaya": "gizem", "Versay Sarayı": "zaman",
+      "Brandenburg Kapısı": "sehir", "Atina Akropolisi": "zaman",
+      "Elhamra Sarayı": "zaman", "Chichén Itzá": "gizem", "Angkor Vat": "gizem",
+      "Sidney Opera Evi": "sehir"
+    };
+    const PLACE_RESULTS = [
+      { id: "zaman", title: "Zaman yolcusu", desc: "Senin tatil planı antik taşın gölgesinde başlar. Kale, saray, sütun sırası: her taş sana bir hikâye fısıldar.", tags: ["tarih", "medeniyet", "bakış"] },
+      { id: "sehir", title: "Şehir nabzı", desc: "Işıklar, gürültü, kalabalık: şehir senin sahnen. Bir şehri kaynaktan değil, sokaktan okuyorsun.", tags: ["şehir", "enerji", "kalabalık"] },
+      { id: "dogam", title: "Yeşil kaçamak", desc: "Senin tatil şatosu sessiz bir göl kenarı. Doğa iyi geldiği günlerde telefonu kapatan da sensin.", tags: ["doğa", "sakin", "kaçamak"] },
+      { id: "gizem", title: "Gizem avcısı", desc: "Rotan her zaman kalabalığın ötesine uzanır: taş, fısıltı, bulmaca. Az bilinen yerler seni çağırır.", tags: ["keşif", "meraklı", "bulmaca"] }
+    ];
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-yol",
+      title: "O mu bu mu? — seyahat",
+      pool: WIKI.places.filter((p) => p.img && PLACE_VIBE[p.name]),
+      weightOf: (p) => ({ [PLACE_VIBE[p.name]]: 1 }),
+      results: PLACE_RESULTS,
+      accent: "#4b9dff",
+      qText: "Hangisi yaz kaçamağına daha yakın? İki manzara, tek seçim.",
+      desc: "Kale mi, göl mü, metropol mü? İki büyük fotoğraf, tek kararı: bakalım yol tarzın hangi manzarada saklı."
+    }));
+
+    /* --- 7-8) sokak lezzetleri ve ev sofrası --- */
+    const yemekFoto = (FOOD.dishes || []).filter((d) => d.img);
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-sokak",
+      title: "O mu bu mu? — sokak lezzetleri",
+      pool: yemekFoto,
+      weightOf: (d) => { const w = dishW(d.name); return w && w.sokak ? w : null; },
+      results: FOOD_RESULTS,
+      accent: "#ff9c3c",
+      qText: "Hangisi akşamüstü sokakta daha iyi geçer? İki fotoğraf, tek karar.",
+      desc: "Simit mi kumpir mi? Tezgâh başı gurme turu: her kartta iki sokak klasiği, tek karar."
+    }));
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-sofra",
+      title: "O mu bu mu? — ev sofrası",
+      pool: yemekFoto,
+      weightOf: (d) => { const w = dishW(d.name); return w && w.sofra ? w : null; },
+      results: FOOD_RESULTS,
+      accent: "#7ee0a2",
+      qText: "Hangisi akşam ev sofrasını tamamlar? İki fotoğraf, tek karar.",
+      desc: "Menemen mi ramen mi? İki ev yemeği fotoğrafı, diyet sofra dövüşü: senin sofra tarzın hangi tencerede kaynıyor?"
+    }));
+
+    /* --- 9) O mu bu mu? — portreler --- */
+    const PORTRAIT_RESULTS = [
+      { id: "bilim", title: "Laboratuvar hesabı", desc: "Sofrada hesap sorusu soran sensin: mantık, ölçü, netlik. Bilim insanları doyumsuz sohbet dostun.", tags: ["analitik", "meraklı"] },
+      { id: "edebiyat", title: "Kalemin kura", desc: "Harfleri yiyen sofra arkadaşın seni seçiyor: yazarlar, şairler, hikâyeler. Sohbet laf ağzında kavgasız bitmez.", tags: ["yazınsal", "hikâye"] },
+      { id: "sanat", title: "Tuval delisi", desc: "Renklere ve ayrık notaya zayıfsın: ressamlar ve müzisyenler masana oturunca sofra havası değişir.", tags: ["renkli", "anlık"] },
+      { id: "tarih", title: "Taht hamlesi", desc: "Kaderi değiştiren insanlar senin sofrana oturuyor: devlet adamları, komutanlar. Senin masasında her olay bir karar.", tags: ["kararlı", "stratejik"] }
+    ];
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-portre",
+      title: "O mu bu mu? — portreler",
+      pool: WIKI.people.filter((p) => p.img && p.field),
+      weightOf: (p) => ({ [p.field]: 2 }),
+      results: PORTRAIT_RESULTS,
+      accent: "#b79cff",
+      qText: "Hangisini akşam yemeğine davet ederdin? İki portre, tek davet.",
+      desc: "Einstein mı, Kafka mı? İki yüz, tek sandalye; davet listesi senin kim olduğunu söylüyor."
+    }));
+
+    /* --- 10) O mu bu mu? — tatlılar --- */
+    const TATLI_W = {
+      "Baklava": { serbet: 2 }, "Lokum": { serbet: 2 }, "Aşure": { serbet: 2 },
+      "Helva": { serbet: 2 }, "Tavuk göğsü": { serbet: 2 }, "Boza": { serbet: 2, fantezi: 1 },
+      "Tiramisu": { fantezi: 2 }, "Pastel de nata": { fantezi: 2 },
+      "Pavlova": { fantezi: 2 }, "Churros": { fantezi: 2 }
+    };
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-tatli",
+      title: "O mu bu mu? — tatlılar",
+      pool: yemekFoto.filter((d) => TATLI_W[d.name]),
+      weightOf: (d) => TATLI_W[d.name],
+      results: [
+        { id: "serbet", title: "Şerbetçi ustası", desc: "Senin tatlı tanımı ağır ve kadife: baklava, aşure, helva. Şerbet kokusu senin evinin kapısıdır.", tags: ["şerbet", "klasik"] },
+        { id: "fantezi", title: "Kadife tatlıcısı", desc: "Kremalı, buzlu, modern: senin tatlı fikri tiramisu ve pavlova. Fantezi bölmeli tatlılar seni tahtına çıkarır.", tags: ["fantezi", "modern"] }
+      ],
+      sample: 5,
+      accent: "#ffd84b",
+      qText: "Hangisi günün tatlı krizi çözer? İki tatlı, tek pasta.",
+      desc: "Baklava mı tiramisu mi? Tatlı kavgası en yumuşak cephede: her kartta tatlı iki rakip, tek kaşık."
+    }));
+
+    /* --- 11) O mu bu mu? — hamur işi --- */
+    out.push(...buildPairTest({
+      id: "o-mu-bu-mu-hamur",
+      title: "O mu bu mu? — hamur işi",
+      pool: yemekFoto,
+      weightOf: (d) => { const w = dishW(d.name); return w && w.hamur ? w : null; },
+      results: FOOD_RESULTS,
+      sample: 5,
+      accent: "#c9a86b",
+      qText: "Hangisi fırından çıktığı an önce o alınır? İki hamur, tek sıcaklık.",
+      desc: "Sıcak ve içi dolu hamur işi kavgası: pide mi börek mi, pizza mı baguette mi? Senin asıl sevgin fırında saklı."
+    }));
+
+    /* --- 12) hayvan adresi: deniz, gökyüzü, kara --- */
+    const HABITAT = {
+      "Aslan": "Kara", "Kaplan": "Kara", "Fil": "Kara", "Zürafa": "Kara", "Dev panda": "Kara",
+      "Koala": "Kara", "Kanguru": "Kara", "Kutup ayısı": "Kara", "Kurt": "Kara", "Tilki": "Kara",
+      "Çita": "Kara", "Pars": "Kara", "Şempanze": "Kara", "Goril": "Kara", "Deve": "Kara",
+      "Gergedan": "Kara", "Su aygırı": "Kara", "Timsahlar": "Kara",
+      "Yılan": "Kara", "Kurbağa": "Kara", "Tavşan": "Kara", "Sincap": "Kara",
+      "Kelebek": "Kara", "Arı": "Kara", "Karınca": "Kara", "Örümcek": "Kara", "Penguen": "Kara",
+      "Kartal": "Gökyüzü", "Baykuş": "Gökyüzü", "Flamingo": "Gökyüzü",
+      "Tavus kuşu": "Gökyüzü", "Papağan": "Gökyüzü", "Karga": "Gökyüzü",
+      "Mavi balina": "Deniz", "Köpekbalığı": "Deniz", "Ahtapot": "Deniz", "Denizanası": "Deniz"
+    };
+    const habitats = ["Deniz", "Gökyüzü", "Kara"];
+    out.push({
+      id: "hayvan-adresi",
+      title: "Bu hayvanın adresi ne?",
+      category: "bilgi",
+      mode: "trivia",
+      dynamic: true,
+      sample: 10,
+      cover: coverPhoto(WIKI.animals.find((a) => a.img && HABITAT[a.name] === "Deniz")?.img || WIKI.animals[0].img, "rgba(10,10,12,.42)"),
+      photoCover: true,
+      accent: "#4b9dff",
+      desc: "Aslan kara, kartal gökyüzü, balina deniz... Kolay mı? Fotoğrafa bak, hayvanın adresini bil.",
+      minutes: 3,
+      questions: (WIKI.animals || []).filter((a) => a.img && HABITAT[a.name]).map((a) => ({
+        q: "Bu hayvan en çok nerede yaşar?",
+        image: a.img,
+        imageFit: "cover",
+        fact: a.desc || a.fact,
+        wiki: a.page,
+        a: choices(HABITAT[a.name], habitats)
+      })),
+      results: bands("habitat", "knowledge")
+    });
+
+    /* --- 13-14) bayrak → başkent ve kıta --- */
+    const bayrakli = WIKI.countries.filter((c) => c.flag && c.capital);
+    const baskentler = [...new Set(bayrakli.map((c) => c.capital))];
+    if (bayrakli.length >= 8 && baskentler.length >= 4) {
+      out.push({
+        id: "wiki-bayrak-baskent",
+        title: "Bayrağı görün, başkent bil",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: `linear-gradient(150deg, rgba(10,10,12,.25), rgba(10,10,12,.92)), ${bgUrl(bayrakli[7].flag)} center/contain no-repeat, #14141a`,
+        photoCover: true,
+        accent: "#ff4b4b",
+        desc: `${bayrakli.length} bayrak, bir başkent. Görsel cevap yok: bayrak soru, başkent cevap.`,
+        minutes: 3,
+        questions: bayrakli.map((c) => ({
+          q: "Bu bayrağın ülkesinin başkenti hangisi?",
+          image: c.flag,
+          imageFit: "contain",
+          fact: `${c.name} · ${c.continent || ""}`,
+          wiki: c.page,
+          a: choices(c.capital, baskentler)
+        })),
+        results: bands("bayrakbaskent", "knowledge")
+      });
+    }
+    const canonKita = new Set(["Asya", "Avrupa", "Afrika", "Kuzey Amerika", "Güney Amerika", "Okyanusya"]);
+    const kitali = WIKI.countries.filter((c) => c.flag && canonKita.has(c.continent));
+    const kitaDizi = [...new Set(kitali.map((c) => c.continent))];
+    if (kitali.length >= 8 && kitaDizi.length >= 4) {
+      out.push({
+        id: "wiki-bayrak-kita",
+        title: "Bu bayrak hangi kıtadan?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: `linear-gradient(150deg, rgba(10,10,12,.25), rgba(10,10,12,.92)), ${bgUrl(kitali[3].flag)} center/contain no-repeat, #14141a`,
+        photoCover: true,
+        accent: "#6ee7d8",
+        desc: `${kitali.length} bayrak fotoğrafı, dört kıta. Bayrağı oku, coğrafyaya karar ver.`,
+        minutes: 3,
+        questions: kitali.map((c) => ({
+          q: "Bu bayrak hangi kıtadan?",
+          image: c.flag,
+          imageFit: "contain",
+          fact: `${c.name} · Başkent: ${c.capital}`,
+          wiki: c.page,
+          a: choices(c.continent, kitaDizi)
+        })),
+        results: bands("bayrakkita", "knowledge")
+      });
+    }
+
+    return out;
+  }
   function applyExtras() {
     TESTS.forEach((test) => {
       const meta = EXTRAS.meta && EXTRAS.meta[test.id];
@@ -696,14 +1121,18 @@
 
   let ALL_TESTS = null;
   const TEST_ORDER = [
-    "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "mutfak-tanima", "tabak-esle",
-    "wiki-bayraklar", "en-iyi-yemekler", "o-mu-bu-mu-yemek",
+    "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
+    "o-mu-bu-mu-tatli", "o-mu-bu-mu-hamur", "o-mu-bu-mu-hayvan", "o-mu-bu-mu-yol",
+    "o-mu-bu-mu-portre", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
+    "mutfak-tanima", "tabak-esle",
+    "wiki-bayraklar", "wiki-bayrak-baskent", "wiki-bayrak-kita", "wiki-yer-ulke",
+    "wiki-portre-alan", "en-iyi-yemekler", "o-mu-bu-mu-yemek",
     "o-mu-bu-mu", "hangi-hayvan-sensin", "hangi-istanbul-semtisin",
     "turkiye-genel-kultur", "mantik-ve-dikkat"
   ];
   function allTests() {
     if (!ALL_TESTS) {
-      const flat = [...TESTS, ...buildWikiTests(), ...buildFoodTests()];
+      const flat = [...TESTS, ...buildWikiTests(), ...buildFoodTests(), ...buildExtraVisualTests()];
       ALL_TESTS = flat
         .map((t, i) => ({ t, i }))
         .sort((a, b) => {
