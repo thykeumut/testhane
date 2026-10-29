@@ -160,7 +160,14 @@
     "o-mu-bu-mu-hamur": "utensils",
     "hayvan-adresi": "paw",
     "wiki-bayrak-baskent": "flag",
-    "wiki-bayrak-kita": "globe"
+    "wiki-bayrak-kita": "globe",
+    "renk-kupasi": "palette",
+    "hayvan-kupasi": "trophy",
+    "yer-kupasi": "compass",
+    "gezegen-sira": "planet",
+    "hayvan-sinifi": "flask",
+    "bayrak-esle": "flag",
+    "turkiye-eserler": "landmark"
   };
 
   const CAT_ICONS = { "kişilik": "spark", "bilgi": "star", "eğlence": "tv", "ilişki": "heart" };
@@ -1032,6 +1039,199 @@
       results: bands("habitat", "knowledge")
     });
 
+    /* --- 15) RENK KUPASI: kazanan sonraki turda kalır --- */
+    const RENK_DATA = [
+      ["Sarı", "#FFD84B", "Işık kraliçesi", "Girdiğin odayı aydınlatırsın; neşen gölge yapamaz, her köşeye sızar.", ["neşeli", "parlak"]],
+      ["Kırmızı", "#FF4B4B", "Ateş gücü", "Kararlı ve hızlısın; kırmızı gibi ya yürü ya da koş, durmak yok.", ["ateşli", "cesur"]],
+      ["Mavi", "#4B9DFF", "Berrak zihin", "Sakin ve derinsin, su gibi; zihnin bulanmaz, kararların net.", ["sakin", "mantıklı"]],
+      ["Yeşil", "#49AA64", "Dengeli çim", "Kökleri sağlam bir ağaç gibisin: düşünceli, güvenli, doğal.", ["dengeli", "güvenilir"]],
+      ["Mor", "#B79CFF", "Kraliyet hayâli", "Az bulunur bir havan var: hayâl ve estetik bir arada; kraliyetin rengi.", ["hayalci", "estetik"]],
+      ["Turuncu", "#FF8A4C", "Enerji jeti", "Planın sürekli açık; enerji kesilmez, gündem asla boş kalmaz.", ["enerjik", "sıcak"]],
+      ["Pembe", "#FF5C93", "Yumuşak kalp", "Sertleşmeden ikna edersin; şefkat ve romantizmin senin cümlen.", ["şefkatli", "romantik"]],
+      ["Turkuaz", "#6EE7D8", "Taze rüzgâr", "Serin ve canlısın, deniz kokusu gibi; yerinde durmazsın, akıntı seni taşır.", ["taze", "akıcı"]],
+      ["Lacivert", "#22335C", "Gece derinliği", "Az konuşur, çok düşünürsün: gizemli ve derinsin; sabır senin imzan.", ["derin", "gizemli"]],
+      ["Fildişi", "#FDF6E3", "Işık avcısı", "Sade ve şık: beyaz kâğıt gibi; hangi tarza girersen uyum sağlarsın.", ["minimal", "hafif"]]
+    ];
+    const renkImg = (hex) => "data:image/svg+xml;utf8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="880"><rect width="640" height="880" fill="${hex}"/><path d="M0 0h640L0 880Z" fill="rgba(0,0,0,.12)"/></svg>`);
+    out.push({
+      id: "renk-kupasi",
+      title: "Renk kupası: son kalan rengin",
+      category: "kişilik",
+      mode: "personality",
+      knockout: true,
+      sample: 6,
+      pool: RENK_DATA.map(([t, hex]) => ({ t, i: renkImg(hex), rid: "renk-" + t.toLocaleLowerCase("tr") })),
+      results: RENK_DATA.map(([t, , title, desc, tags]) => ({ id: "renk-" + t.toLocaleLowerCase("tr"), title, desc, tags })),
+      cover: "linear-gradient(120deg,#FFD84B 0%,#FF4B4B 22%,#B79CFF 48%,#4B9DFF 70%,#49AA64 100%)",
+      accent: "#FFD84B",
+      desc: "Kırmızı mı yeşil mi? Kazanan her turda kalmaya devam eder; on renk arasından tek şampiyon rengin çıkar.",
+      minutes: 3
+    });
+
+    /* --- 16-17) hayvan ve yer kupaları --- */
+    const dominantKey = (w) => Object.entries(w).sort((a, b) => b[1] - a[1])[0][0];
+    const hayvanKoleksiyon = (WIKI.animals || []).filter((a) => a.img && ANIMAL_W[a.name]);
+    if (hayvanKoleksiyon.length >= 10) {
+      out.push({
+        id: "hayvan-kupasi",
+        title: "Hayvan kupası: son kalan kim?",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 7,
+        pool: hayvanKoleksiyon.map((a) => ({ t: a.name, i: a.img, rid: dominantKey(ANIMAL_W[a.name]) })),
+        results: ANIMAL_RESULTS,
+        cover: coverPhoto((WIKI.animals || []).find((a) => a.name === "Aslan")?.img || hayvanKoleksiyon[0].img, "rgba(10,10,12,.42)"),
+        photoCover: true,
+        accent: "#6ee7d8",
+        desc: "Aslan mı penguen mi? Kupa turunda kazanan kaybedileni ezer: seçtiğin sonraki turda kalmaya devam eder, tek hayvan şampiyon çıkar.",
+        minutes: 3
+      });
+    }
+    const yerKoleksiyon = WIKI.places.filter((p) => p.img && PLACE_VIBE[p.name]);
+    if (yerKoleksiyon.length >= 10) {
+      out.push({
+        id: "yer-kupasi",
+        title: "Dünya kupası: son kalan yer",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 7,
+        pool: yerKoleksiyon.map((p) => ({ t: p.name, i: p.img, rid: PLACE_VIBE[p.name] })),
+        results: PLACE_RESULTS,
+        cover: coverPhoto(WIKI.places.find((p) => p.name === "Kapadokya")?.img || yerKoleksiyon[0].img, "rgba(10,10,12,.44)"),
+        photoCover: true,
+        accent: "#4b9dff",
+        desc: "Kapadokya mı Machu Picchu mi? Kazanan her turda sahnedeki yerini korur; 54 adaydan tek yer şampiyonu çıkar.",
+        minutes: 3
+      });
+    }
+
+    /* --- 18) gezegen sırası (bilimsel) --- */
+    const pln = WIKI.planets.filter((p) => p.img);
+    if (pln.length >= 6) {
+      const siraYer = ["1.", "2.", "3.", "4.", "5.", "6.", "7.", "8."];
+      out.push({
+        id: "gezegen-sira",
+        title: "Bu gezegen kaçıncı sırada?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 8,
+        cover: coverPhoto(pln[2]?.img || pln[0].img, "rgba(10,10,12,.42)"),
+        photoCover: true,
+        accent: "#b79cff",
+        desc: "Güneş sistemi sıralaması iyi bilinir, fakat görseldeki gezegeni tanımak işi zorlaştırır: kaçıncı sırada?",
+        minutes: 3,
+        questions: pln.map((p, i) => ({
+          q: "Fotoğraftaki gezegen Güneş'ten kaçıncı sıradadır?",
+          image: p.img,
+          imageFit: "contain",
+          mediaDark: true,
+          fact: `${p.name} · ${p.desc || p.fact}`,
+          wiki: p.page,
+          a: choices(`${i + 1}.`, siraYer)
+        })),
+        results: bands("gezsira", "space")
+      });
+    }
+
+    /* --- 19) hayvan sınıfı (bilimsel) --- */
+    const KLAS_MAP = {
+      "Aslan": "Memeli", "Kaplan": "Memeli", "Fil": "Memeli", "Zürafa": "Memeli",
+      "Dev panda": "Memeli", "Koala": "Memeli", "Kanguru": "Memeli",
+      "Kutup ayısı": "Memeli", "Kurt": "Memeli", "Tilki": "Memeli", "Çita": "Memeli",
+      "Pars": "Memeli", "Şempanze": "Memeli", "Goril": "Memeli", "Deve": "Memeli",
+      "Gergedan": "Memeli", "Su aygırı": "Memeli", "Tavşan": "Memeli", "Sincap": "Memeli",
+      "Kartal": "Kuş", "Baykuş": "Kuş", "Flamingo": "Kuş", "Tavus kuşu": "Kuş",
+      "Papağan": "Kuş", "Karga": "Kuş", "Penguen": "Kuş",
+      "Mavi balina": "Deniz canlısı", "Köpekbalığı": "Deniz canlısı",
+      "Ahtapot": "Deniz canlısı", "Denizanası": "Deniz canlısı",
+      "Kelebek": "Omurgasız", "Arı": "Omurgasız", "Karınca": "Omurgasız", "Örümcek": "Omurgasız",
+      "Yılan": "Sürüngen & amfibi", "Timsahlar": "Sürüngen & amfibi", "Kurbağa": "Sürüngen & amfibi"
+    };
+    const klasEtiket = [...new Set(Object.values(KLAS_MAP))];
+    out.push({
+      id: "hayvan-sinifi",
+      title: "Bu hayvanın sınıfı hangisi?",
+      category: "bilgi",
+      mode: "trivia",
+      dynamic: true,
+      sample: 10,
+      cover: coverPhoto((WIKI.animals || []).find((a) => a.name === "Baykuş")?.img || WIKI.animals[0]?.img, "rgba(10,10,12,.42)"),
+      photoCover: true,
+      accent: "#6ee7d8",
+      desc: "Bazıları memeli, bazıları kuş: fotoğrafı gör, bilimsel sınıfını söyle. Penguen kuş, bilirsin.",
+      minutes: 3,
+      questions: (WIKI.animals || []).filter((a) => a.img && KLAS_MAP[a.name]).map((a) => ({
+        q: "Bu hayvanın bilimsel sınıfı hangisi?",
+        image: a.img,
+        imageFit: "cover",
+        fact: a.desc || a.fact,
+        wiki: a.page,
+        a: choices(KLAS_MAP[a.name], klasEtiket)
+      })),
+      results: bands("sinif", "knowledge")
+    });
+
+    /* --- 20) bayrak eşleştir: cevaplar bayrak fotoğrafları --- */
+    const bayAll = WIKI.countries.filter((c) => c.flag && c.capital);
+    if (bayAll.length >= 8) {
+      out.push({
+        id: "bayrak-esle",
+        title: "Bayrak eşleştir",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: `linear-gradient(150deg, rgba(10,10,12,.25), rgba(10,10,12,.92)), ${bgUrl(bayAll[11].flag)} center/contain no-repeat, #14141a`,
+        photoCover: true,
+        accent: "#ff4b4b",
+        desc: "Ülke adı veriliyor, cevap bayrak fotoğrafı: dört bayrak arasından doğru olanı seç.",
+        minutes: 3,
+        questions: bayAll.map((c) => {
+          const rakip = shuffle(bayAll.filter((x) => x !== c)).slice(0, 3)
+            .map((x) => ({ t: x.name, i: x.flag }));
+          return {
+            q: `${c.name} bayrağı hangisi?`,
+            fact: `${c.name} · Başkent: ${c.capital}`,
+            wiki: c.page,
+            a: shuffle([{ t: c.name, i: c.flag, c: true }, ...rakip])
+          };
+        }),
+        results: bands("bayrakesle", "visual")
+      });
+    }
+
+    /* --- 21) Türkiye eserleri: il tahmini --- */
+    const trPlaces = WIKI.places.filter((p) => p.img && p.country === "Türkiye");
+    if (trPlaces.length >= 8) {
+      const trCities = [...new Set(trPlaces.map((p) => p.city))];
+      out.push({
+        id: "turkiye-eserler",
+        title: "Türkiye eserleri: hangi ilde?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(WIKI.places.find((p) => p.name === "Göbeklitepe")?.img || trPlaces[0].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#ffd84b",
+        desc: `${trPlaces.length} tarihî eser, hepsi Türkiye'den: bu eser hangi ilde? Genel kültür turunun kısa sınavı.`,
+        minutes: 4,
+        questions: trPlaces.map((p) => ({
+          q: `${p.name} hangi ilde yer alır?`,
+          image: p.img,
+          imageFit: "cover",
+          fact: `${p.name} · ${p.city}`,
+          wiki: p.page,
+          a: choices(p.city, trCities)
+        })),
+        results: bands("eserler", "knowledge")
+      });
+    }
+
     /* --- 13-14) bayrak → başkent ve kıta --- */
     const bayrakli = WIKI.countries.filter((c) => c.flag && c.capital);
     const baskentler = [...new Set(bayrakli.map((c) => c.capital))];
@@ -1121,10 +1321,11 @@
 
   let ALL_TESTS = null;
   const TEST_ORDER = [
-    "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
+    "renk-kupasi", "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
     "o-mu-bu-mu-tatli", "o-mu-bu-mu-hamur", "o-mu-bu-mu-hayvan", "o-mu-bu-mu-yol",
-    "o-mu-bu-mu-portre", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
+    "o-mu-bu-mu-portre", "hayvan-kupasi", "yer-kupasi", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
     "mutfak-tanima", "tabak-esle",
+    "gezegen-sira", "hayvan-sinifi", "turkiye-eserler", "bayrak-esle",
     "wiki-bayraklar", "wiki-bayrak-baskent", "wiki-bayrak-kita", "wiki-yer-ulke",
     "wiki-portre-alan", "en-iyi-yemekler", "o-mu-bu-mu-yemek",
     "o-mu-bu-mu", "hangi-hayvan-sensin", "hangi-istanbul-semtisin",
@@ -1302,7 +1503,7 @@
     const s = stats();
     const wikiCount = tests.filter((t) => t.dynamic).length;
     const flagCount = WIKI.countries.filter((c) => c.flag).length;
-    const totalQ = tests.reduce((n, t) => n + (t.hero ? 0 : t.questions.length), 0);
+    const totalQ = tests.reduce((n, t) => n + (t.hero || t.knockout ? 0 : t.questions.length), 0);
     const totalLabel = totalQ.toLocaleString("tr-TR");
     const collage = ["ne-kadar-icene-donuksun", "hangi-istanbul-semtisin"]
       .map((id) => tests.find((t) => t.id === id))
@@ -1467,7 +1668,7 @@
           <h3>${esc(t.title)}</h3>
           <p>${esc(t.desc)}</p>
           <div class="card-meta">
-            <span>${count} soru</span><i>·</i><span>${t.minutes} dk</span>
+            <span>${count} ${t.knockout ? "tur" : "soru"}</span><i>·</i><span>${t.minutes} dk</span>
             ${st.best !== null ? `<i>·</i><span>en iyi %${st.best}</span>` : ""}
             <span class="card-go">başla <b>→</b></span>
           </div>
@@ -1478,13 +1679,20 @@
 
   /* ---------------------------------------------------------- test tanıtım */
   function defaultCount(test) {
+    if (test.knockout) {
+      const rounds = test.pool.length - 1;
+      return Math.min(test.sample || rounds, rounds);
+    }
     const total = test.questions.length;
     return Math.min(test.sample || total, total);
   }
 
   function countChoices(test) {
-    const total = test.questions.length;
-    return [...new Set([5, 10, 20].filter((n) => n < total).concat(total))].sort((a, b) => a - b);
+    const total = test.knockout ? test.pool.length - 1 : test.questions.length;
+    return [...new Set([3, 5, 9, 10, 20]
+      .filter((n) => n < total)
+      .concat(total))]
+      .sort((a, b) => a - b);
   }
 
   function renderIntro(test) {
@@ -1495,10 +1703,10 @@
     const fill = other.length < 3
       ? tests.filter((t) => t.id !== test.id && !other.includes(t)).slice(0, 3 - other.length)
       : [];
-    const total = test.questions.length;
+    const total = test.knockout ? test.pool.length - 1 : test.questions.length;
     const chosen = defaultCount(test);
     const counts = countChoices(test);
-    const maxOpts = Math.min(9, Math.max(...test.questions.map((q) => q.a.length)));
+    const maxOpts = test.knockout ? 2 : Math.min(9, Math.max(...test.questions.map((q) => q.a.length)));
     const st = testStats(test);
 
     view.innerHTML = `
@@ -1529,15 +1737,16 @@
                   </button>`).join("")}
               </div>
               ${test.mode === "personality" && total > 5 ? `<p class="pick-note">Kısa turda sonuç yaklaşık çıkar; tam sonuç için tümünü seç.</p>` : ""}
+            ${test.knockout ? `<p class="pick-note">Kupa formatı: kazanan her turda kalmaya devam eder, en sonda tek şampiyon çıkar.</p>` : ""}
             </div>
 
             <div class="intro-meta">
-              <span><b id="metaCount">${chosen}</b> soru</span>
-              <span><b>${test.dynamic ? test.questions.length : test.results.length}</b> ${test.dynamic ? "soruluk havuz" : "olası sonuç"}</span>
+              <span><b id="metaCount">${chosen}</b> ${test.knockout ? "tur" : "soru"}</span>
+              <span><b>${test.knockout ? test.pool.length : test.dynamic ? test.questions.length : test.results.length}</b> ${test.knockout ? "aday kupa turunda" : test.dynamic ? "soruluk havuz" : "olası sonuç"}</span>
               <span><b>${test.minutes}</b> dakika</span>
             </div>
             <button class="btn btn-primary btn-wide" id="startBtn">
-              Teste başla · <span id="startCount">${chosen}</span> soru <span class="btn-arrow">→</span>
+              Teste başla · <span id="startCount">${chosen}</span> ${test.knockout ? "tur" : "soru"} <span class="btn-arrow">→</span>
             </button>
             ${test.dynamic || test.photoCover ? `<p class="intro-src">Görseller: Wikimedia Commons · Bilgiler: Vikipedi (CC BY-SA)</p>` : ""}
             <p class="hint">Klavyeden 1–${maxOpts} tuşlarıyla da cevaplayabilirsin; bilgi testlerinde Enter ile sonraki soruya geçersin, ← ile geri dönersin.</p>
@@ -1553,7 +1762,7 @@
                   <span class="mini-icon" style="background:${t.cover}">${icon(testIcon(t))}</span>
                   <span>
                     <b>${esc(t.title)}</b>
-                    <em>${t.questions.length} soru · ${esc(t.category)}</em>
+                    <em>${t.knockout ? (t.pool.length - 1) + " tur" : t.questions.length + " soru"} · ${esc(t.category)}</em>
                   </span>
                 </a>`).join("")}
             </div>
@@ -1585,6 +1794,30 @@
   /* ---------------------------------------------------------- soru akışı */
   function startQuiz(test, count = 0) {
     if (!test) return renderHome();
+
+    /* kupa modu: kazanan sonraki turda kalır, sonda tek şampiyon */
+    if (test.knockout) {
+      const pool = shuffle(test.pool);
+      const maxRounds = pool.length - 1;
+      const wanted = count > 0 ? Math.min(count, maxRounds) : defaultCount(test);
+      const bracket = pool.slice(0, wanted + 1);
+      state.quiz = {
+        test,
+        knockout: true,
+        pool: bracket,
+        totalRounds: wanted,
+        round: 0,
+        idx: 0,
+        winner: bracket[0],
+        winnerHistory: [bracket[0]],
+        answers: [],
+        locked: false,
+        count: wanted
+      };
+      renderQuestion();
+      return;
+    }
+
     const total = test.questions.length;
     const wanted = count > 0 ? Math.min(count, total) : defaultCount(test);
     const questions = wanted < total || test.dynamic
@@ -1596,7 +1829,17 @@
 
   function quizBack() {
     const quiz = state.quiz;
-    if (!quiz || quiz.locked || quiz.idx === 0) return;
+    if (!quiz || quiz.locked) return;
+    if (quiz.knockout) {
+      if (quiz.round === 0) return;
+      quiz.round--;
+      quiz.winnerHistory.pop();
+      quiz.winner = quiz.winnerHistory[quiz.winnerHistory.length - 1];
+      quiz.answers.length = quiz.round;
+      renderQuestion();
+      return;
+    }
+    if (quiz.idx === 0) return;
     quiz.idx--;
     quiz.answers.length = quiz.idx;
     renderQuestion();
@@ -1605,17 +1848,36 @@
   function renderQuestion() {
     const quiz = state.quiz;
     if (!quiz) return renderHome();
-    const { test, idx, questions } = quiz;
-    const q = questions[idx];
-    const n = questions.length;
+    const { test } = quiz;
+
+    let q, idx, n;
+    if (quiz.knockout) {
+      /* kupa: kazanan sonraki turda kalır, en sonda tek şampiyon kalır */
+      const champ = quiz.winner;
+      const chal = quiz.pool[quiz.round + 1];
+      idx = quiz.round;
+      n = quiz.totalRounds;
+      q = {
+        q: quiz.knockoutQ || `Son turda kazanan ${champ.t}. ${champ.t} mi, ${chal.t} mi?`,
+        big: true,
+        a: [
+          { t: champ.t, i: champ.i, champ: true },
+          { t: chal.t, i: chal.i }
+        ]
+      };
+      quiz._cur = q;
+    } else {
+      q = quiz.questions[quiz.idx];
+      idx = quiz.idx;
+      n = quiz.questions.length;
+      const upcoming = questionsUpcoming(quiz, idx);
+      if (upcoming?.image) {
+        const pre = new Image();
+        pre.src = upcoming.image;
+      }
+    }
     const pct = Math.round((idx / n) * 100);
     document.title = `${idx + 1}/${n} · ${test.title} — TESTHANE`;
-
-    const upcoming = questions[idx + 1];
-    if (upcoming?.image) {
-      const pre = new Image();
-      pre.src = upcoming.image;
-    }
 
     view.innerHTML = `
       <section class="quiz${q.big ? " split" : ""}">
@@ -1629,7 +1891,7 @@
         </div>
 
         <div class="qcard">
-          <p class="q-kicker">SORU ${String(idx + 1).padStart(2, "0")}${test.dynamic ? '<em>· wikimedia</em>' : ""}</p>
+          <p class="q-kicker">${quiz.knockout ? "KUPA" : "SORU"} ${String(idx + 1).padStart(2, "0")}${test.dynamic ? '<em>· wikimedia</em>' : ""}${quiz.knockout ? '<em>· kazanılan kalır</em>' : ""}</p>
           <h2 class="q-text">${esc(q.q)}</h2>
 
           ${q.image ? `
@@ -1638,8 +1900,9 @@
             </figure>` : ""}
           <div class="opts${q.big ? " big" : ""}" role="group" aria-label="Seçenekler">
             ${q.a.map((o, i) => q.big && o.i ? `
-              <button class="opt bigvis" data-i="${i}" style="--d:${i * 60}ms">
+              <button class="opt bigvis${o.champ ? " is-champ" : ""}" data-i="${i}" style="--d:${i * 60}ms">
                 <span class="opt-hero" style="background-image:url(&quot;${esc(String(o.i).replace(/&/g, "&amp;").replace(/"/g, "%22"))}&quot;)" role="img" aria-label="${esc(o.t || "")}"></span>
+                ${o.champ ? `<span class="opt-champ">${icon("trophy")}kazanan · devam ediyor</span>` : ""}
                 <span class="opt-key">${i + 1}</span>
                 <span class="opt-text">${esc(o.t)}</span>
               </button>` : `
@@ -1673,17 +1936,44 @@
     window.scrollTo(0, 0);
   }
 
+  function questionsUpcoming(quiz, idx) {
+    return quiz.questions[idx + 1];
+  }
+
   function choose(index) {
     const quiz = state.quiz;
     if (!quiz || quiz.locked) return;
     const test = quiz.test;
-    const q = quiz.questions[quiz.idx];
     const btn = $(`.opt[data-i="${index}"]`, view);
     if (!btn) return;
 
     quiz.locked = true;
 
+    if (quiz.knockout) {
+      /* kupa turu: seçilen kazanır ve sonraki turda devam eder */
+      const chosen = quiz._cur.a[index];
+      quiz.answers[quiz.round] = index;
+      btn.classList.add("sel");
+      $$(".opt", view).forEach((b) => { if (b !== btn) b.classList.add("dim"); });
+      quiz.advance = () => {
+        clearTimeout(quiz.timer);
+        if (state.quiz !== quiz) return;
+        quiz.advance = null;
+        quiz.winner = chosen;
+        quiz.winnerHistory.push(chosen);
+        quiz.round++;
+        quiz.locked = false;
+        if (quiz.round >= quiz.totalRounds) finishQuiz();
+        else renderQuestion();
+      };
+      quiz.timer = setTimeout(() => {
+        if (state.quiz === quiz && quiz.advance) quiz.advance();
+      }, reduceMotion ? 60 : 420);
+      return;
+    }
+
     const isTrivia = test.mode === "trivia";
+    const q = quiz.questions[quiz.idx];
     let delay = reduceMotion ? 40 : 260;
 
     if (isTrivia) {
@@ -1754,8 +2044,16 @@
   }
 
   function finishQuiz() {
-    const { test, questions, answers } = state.quiz;
-    const outcome = computeOutcome(test, questions, answers);
+    const quiz = state.quiz;
+    const test = quiz.test;
+    let outcome;
+    if (quiz.knockout) {
+      /* kupanın şampiyonu = son tura kalan aday */
+      const result = test.results.find((r) => r.id === quiz.winner.rid) || test.results[0];
+      outcome = { result, score: null, total: quiz.totalRounds, pct: null };
+    } else {
+      outcome = computeOutcome(test, quiz.questions, quiz.answers);
+    }
     store.attempts.push({
       testId: test.id,
       resultId: outcome.result.id,
@@ -1778,7 +2076,9 @@
       r: outcome.result.title,
       s: outcome.pct,
       sc: typeof outcome.score === "number" ? [outcome.score, outcome.total] : null,
-      d: buildBoardDetail(test, questions, answers),
+      d: quiz.knockout
+        ? quiz.winnerHistory.slice(0, 12).map((w) => ({ q: "kupa turu", u: String(w.t).slice(0, 60) }))
+        : buildBoardDetail(test, quiz.questions, quiz.answers),
       at: Date.now()
     };
     if (store.name) {

@@ -4,9 +4,9 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **50 test** — 18 el yazımı + 24 görselli bilgi/kişilik testi + 8 yemek testi
+- **57 test** — 18 el yazımı + 31 görselli bilgi/kişilik testi + 8 yemek testi
 - **Ortak tahta**: test sonunda adını yaz; kim ne sonuç aldı görsün (`textdb.dev`, sunucusuz)
-- **~2.280 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
+- **~2.560 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
   - 83 portre (bilim insanları, yazarlar, ressamlar/müzisyenler, tarihî kişiler)
@@ -22,6 +22,8 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 - **İki sonuç motoru**
   - `personality`: seçenek ağırlıkları toplanır, en yüksek sonuç kazanır
   - `trivia`: doğru sayısına göre yüzdelik dilim
+  - `knockout` (kupa): seçilen aday sonraki turda kalmaya devam eder, her tur biri elenir ve sonda tek şampiyon kalır
+- **Kupa turnuvası testleri** — Renk kupası, Hayvan kupası, Dünya kupası: "Sarı mı kırmızı mı?" tarzı; kazanınca aynı aday sıradaki rakibiyle devam eder, en sonda tek kazanan sonuç olur. ← geri düğmesi önceki tura döner
 - **Anında geri bildirim** — doğru cevap, kısa bilgi ve ilgili Vikipedi bağlantısı; `sonraki →` düğmesi veya Enter ile beklemeden geçilir
 - **PWA** — manifest + service worker ile kurulabilir; uygulama kabuğu ve çözülmüş Wikimedia görselleri çevrimdışı da gelir
 - **Fotoğraflı el yazımı testler** — 18 testin tamamında Wikimedia kapak fotoğrafı; bilgi testlerinde soru görselleri
@@ -74,11 +76,18 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 | O mu bu mu? — hayvanlar (büyük görselli) | kişilik | Vikipedi / Commons |
 | O mu bu mu? — seyahat (büyük görselli) | kişilik | Vikipedi |
 | O mu bu mu? — portreler (büyük görselli) | kişilik | Vikipedi |
+| Renk kupası (turnuvalı: son kalan rengin) | kişilik | programda üretilen SVG |
+| Hayvan kupası (turnuvalı: son kalan) | eğlence | Vikipedi / Commons |
+| Dünya kupası: son kalan yer (turnuvalı) | eğlence | Vikipedi |
 | Bu yer hangi ülkede? | bilgi | Vikipedi |
 | Bu portre hangi meslekten? | bilgi | Vikipedi |
 | Bu hayvanın adresi ne? (deniz/gökyüzü/kara) | bilgi | Vikipedi |
 | Bu foto neyin nesi? (görsel karışık) | bilgi | tüm havuzlar |
 | Tatlı mı tuzlu mu? | bilgi | Vikipedi / Commons |
+| Bu gezegen kaçıncı sırada? | bilgi | Vikipedi |
+| Bu hayvanın sınıfı hangisi? (memeli/kuş/…) | bilgi | Vikipedi |
+| Bayrak eşleştir (cevaplar bayrak fotoğrafı) | bilgi | Wikidata |
+| Türkiye eserleri: hangi ilde? | bilgi | Vikipedi |
 | Bayrağı görün, başkent bil | bilgi | Wikidata |
 | Bu bayrak hangi kıtadan? | bilgi | Wikidata |
 | Büyük karışık test | bilgi | tüm havuzlar |
