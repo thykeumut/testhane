@@ -10,6 +10,7 @@ const NEW_TESTS = [
     title: "O mu bu mu?",
     category: "eğlence",
     mode: "personality",
+    pair: true,
     cover: "linear-gradient(135deg,#ff5c93 0%,#a98bff 48%,#5b8cff 100%)",
     coverKey: "kavsak",
     accent: "#ff5c93",

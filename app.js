@@ -520,8 +520,7 @@
     { id: "sofra", title: "Ev sofrası huzuru", desc: "Senin lezzet tanımı evin sıcaklığı. Bir tepsi pilav, sabır isteyen bir çorba, uzun bir sofra sohbeti.", tags: ["ev yemeği", "sıcak", "aile"] }
   ];
 
-  function buildBigOMuBuMu(id, title, cuisine, desc) {
-    const mapped = (FOOD.dishes || []).filter((d) =>
+  function buildBigOMuBuMu(id, title, cuisine, desc) {    const mapped = (FOOD.dishes || []).filter((d) =>
       d.img && dishW(d.name) && (!cuisine || d.cuisine === cuisine));
     if (mapped.length < 10) return [];
     const pairs = [];
@@ -533,6 +532,7 @@
       title,
       category: "eğlence",
       mode: "personality",
+      pair: true,
       dynamic: true,
       sample: 10,
       cover: coverPhoto(pairs[0][0].img, "rgba(10,10,12,.5)"),
@@ -699,6 +699,7 @@
       title,
       category: "eğlence",
       mode: "personality",
+      pair: true,
       dynamic: true,
       sample,
       cover: coverPhoto(pairs[0][0].img, "rgba(10,10,12,.5)"),
@@ -1320,6 +1321,33 @@
   applyExtras();
 
   let ALL_TESTS = null;
+  /* eşli (2 seçenekli) kişilik testlerini kupa moduna çevir:
+     seçtiğin aday sonraki turda kalmaya devam eder, sonda tek kazanan kalır. */
+  function toKnockout(test) {
+    if (test.knockout || test.mode !== "personality") return;
+    const qs = test.questions || [];
+    if (!qs.length || qs.some((q) => !q.a || q.a.length !== 2)) return;
+    const results = test.results || [];
+    if (results.length < 2) return;
+    const ridSet = new Set(results.map((r) => r.id));
+    const seen = new Set();
+    const pool = [];
+    for (const q of qs) {
+      for (const o of q.a) {
+        if (seen.has(o.t)) continue;
+        seen.add(o.t);
+        const ranked = o.w ? Object.entries(o.w).sort((a, b) => b[1] - a[1]) : null;
+        const rid = ranked && ranked.length ? ranked[0][0] : null;
+        if (!rid || !ridSet.has(rid)) return; /* sonuç eşleşmiyorsa eski modda bırak */
+        pool.push({ t: o.t, i: o.i, rid });
+      }
+    }
+    if (pool.length < 8) return;
+    test.knockout = true;
+    test.pool = pool;
+    test.sample = Math.min(test.sample || 10, pool.length - 1);
+    test.questions = [];
+  }
   const TEST_ORDER = [
     "renk-kupasi", "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
     "o-mu-bu-mu-tatli", "o-mu-bu-mu-hamur", "o-mu-bu-mu-hayvan", "o-mu-bu-mu-yol",
@@ -1334,6 +1362,7 @@
   function allTests() {
     if (!ALL_TESTS) {
       const flat = [...TESTS, ...buildWikiTests(), ...buildFoodTests(), ...buildExtraVisualTests()];
+      flat.forEach((t) => { if (t.pair) toKnockout(t); });
       ALL_TESTS = flat
         .map((t, i) => ({ t, i }))
         .sort((a, b) => {
@@ -1855,15 +1884,13 @@
       /* kupa: kazanan sonraki turda kalır, en sonda tek şampiyon kalır */
       const champ = quiz.winner;
       const chal = quiz.pool[quiz.round + 1];
+      const hasImgs = Boolean(champ.i && chal.i);
       idx = quiz.round;
       n = quiz.totalRounds;
       q = {
-        q: quiz.knockoutQ || `Son turda kazanan ${champ.t}. ${champ.t} mi, ${chal.t} mi?`,
-        big: true,
-        a: [
-          { t: champ.t, i: champ.i, champ: true },
-          { t: chal.t, i: chal.i }
-        ]
+        q: quiz.knockoutQ || `Kazanan ${champ.t} devam ediyor. ${champ.t} mi, ${chal.t} mi?`,
+        big: hasImgs,
+        a: [{ ...champ, champ: true }, { ...chal }]
       };
       quiz._cur = q;
     } else {
@@ -1908,6 +1935,7 @@
               </button>` : `
               <button class="opt ${o.i ? "vis" : ""}" data-i="${i}" style="--d:${i * 45}ms">
                 <span class="opt-key">${i + 1}</span>
+                ${o.champ ? `<span class="opt-champ opt-champ-inline">${icon("trophy")}kazanan · devam ediyor</span>` : ""}
                 ${o.i ? `<span class="opt-thumb" style="background-image:url(&quot;${esc(String(o.i).replace(/&/g, "&amp;").replace(/"/g, "%22"))}&quot;)" role="img" aria-label="${esc(o.t || "")}"></span>` : ""}
                 <span class="opt-text${o.hideText ? " sr-only" : ""}">${esc(o.t)}</span>
               </button>`).join("")}
@@ -2730,7 +2758,7 @@
     if (target && typeof target.matches === "function" && target.matches("input, textarea, [contenteditable='true']")) return;
     if (state.quiz && /^[1-9]$/.test(e.key)) {
       const i = Number(e.key) - 1;
-      const current = state.quiz.questions[state.quiz.idx];
+      const current = state.quiz.knockout ? state.quiz._cur : state.quiz.questions[state.quiz.idx];
       if (current && i < current.a.length) choose(i);
     }
     if (e.key === "Enter" && state.quiz && state.quiz.locked && state.quiz.advance) {
