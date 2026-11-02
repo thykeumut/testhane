@@ -4,7 +4,7 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **57 test** — 18 el yazımı + 31 görselli bilgi/kişilik testi + 8 yemek testi
+- **60 test** — 18 el yazımı + 34 görselli bilgi/kişilik testi + 8 yemek testi
 - **Ortak tahta**: test sonunda adını yaz; kim ne sonuç aldı görsün (`textdb.dev`, sunucusuz)
 - **~2.560 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
@@ -79,6 +79,9 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 | Renk kupası (turnuvalı: son kalan rengin) | kişilik | programda üretilen SVG |
 | Hayvan kupası (turnuvalı: son kalan) | eğlence | Vikipedi / Commons |
 | Dünya kupası: son kalan yer (turnuvalı) | eğlence | Vikipedi |
+| Büyük kupa: hayvan–yer–yemek turnuvası | eğlence | Vikipedi / Commons |
+| Portre kupası: son efsane (turnuvalı) | eğlence | Vikipedi |
+| Gezegen kupası: son gezegen (turnuvalı) | eğlence | Vikipedi |
 | Bu yer hangi ülkede? | bilgi | Vikipedi |
 | Bu portre hangi meslekten? | bilgi | Vikipedi |
 | Bu hayvanın adresi ne? (deniz/gökyüzü/kara) | bilgi | Vikipedi |

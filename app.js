@@ -167,7 +167,10 @@
     "gezegen-sira": "planet",
     "hayvan-sinifi": "flask",
     "bayrak-esle": "flag",
-    "turkiye-eserler": "landmark"
+    "turkiye-eserler": "landmark",
+    "buyuk-kupa": "crown",
+    "portre-kupasi": "users",
+    "gezegen-kupasi": "planet"
   };
 
   const CAT_ICONS = { "kişilik": "spark", "bilgi": "star", "eğlence": "tv", "ilişki": "heart" };
@@ -1288,8 +1291,81 @@
       });
     }
 
+    /* --- 22-24) yeni kupa turnuvaları --- */
+
+    /* 22) Büyük kupa: hayvan, yer ve yemek aynı turnuvada */
+    const kupaAdaylar = [
+      ...hayvanKoleksiyon.map((a) => ({ t: a.name, i: a.img, rid: dominantKey(ANIMAL_W[a.name]) })),
+      ...yerKoleksiyon.map((p) => ({ t: p.name, i: p.img, rid: PLACE_VIBE[p.name] })),
+      ...yemekFoto.filter((d) => dishW(d.name))
+        .map((d) => ({ t: d.name, i: d.img, rid: dishW(d.name) ? Object.entries(dishW(d.name)).sort((x, y) => y[1] - x[1])[0][0] : null }))
+        .filter((d) => d.rid)
+    ];
+    if (kupaAdaylar.length >= 60) {
+      out.push({
+        id: "buyuk-kupa",
+        title: "Büyük kupa: son kalan ne?",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 9,
+        pool: kupaAdaylar,
+        results: [...ANIMAL_RESULTS, ...PLACE_RESULTS, ...FOOD_RESULTS],
+        cover: `linear-gradient(120deg,#ffd84b 0%,#ff5c93 34%,#4b9dff 66%,#49aa64 100%)`,
+        accent: "#ffd84b",
+        desc: `${kupaAdaylar.length} aday, tek kupa: hayvanlar, tarihi yerler ve klasik yemekler aynı turnuvada kapışır. Kazanan sonraki turda kalır; en son kalan ne, sen o'sun.`,
+        minutes: 4
+      });
+    }
+
+    /* 23) Portre kupası: portrelerden tek efsane */
+    const portreAdaylar = WIKI.people.filter((p) => p.img && FIELD_LABELS[p.field]);
+    if (portreAdaylar.length >= 12) {
+      out.push({
+        id: "portre-kupasi",
+        title: "Portre kupası: son efsane kim?",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 9,
+        pool: portreAdaylar.map((p) => ({ t: p.name, i: p.img, rid: p.field })),
+        results: [
+          { id: "bilim", title: "Laboratuvar aklı", desc: "Nihai şampiyonluğun sahibi: merakı bitmez, deney günlük değil sehpa kitabı. Newton Curie gibi: sorular sorar, cevapları ısrarla arar.", tags: ["bilim", "araştırmacı"] },
+          { id: "edebiyat", title: "Kalemin kâhya", desc: "Son kalansın: kelimeler senin aslan; seansız sohbet, kâğıt ve kalın çerçeve. Pencil gibi: ince detay, kalp iz.", tags: ["yazar", "hikâye"] },
+          { id: "sanat", title: "Tuval canlısı", desc: "Kupayı tablo gibi taktın: renk, ritim, fırça darbe. Kalbinin sesi tuvalde akıyor; sen estetik turnuvanın şampiyonusun.", tags: ["sanat", "estetik"] },
+          { id: "tarih", title: "Tahtın gölgesi", desc: "Son kalan büyük figür: plan, sabır, karar gücü. Reislik bubonun değil ciddiyetin.", tags: ["tarih", "liderlik"] }
+        ],
+        cover: coverPhoto(portreAdaylar[1 % portreAdaylar.length].img, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#b79cff",
+        desc: `${portreAdaylar.length} portre, tek efsane: her turda kazanan isim devam eder, sonda tek portre kupayı alır.`,
+        minutes: 3
+      });
+    }
+
+    /* 24) Gezegen kupası: Güneş sisteminin şampiyonu */
+    const pln2 = WIKI.planets.filter((p) => p.img);
+    if (pln2.length >= 6) {
+      out.push({
+        id: "gezegen-kupasi",
+        title: "Gezegen kupası: son gezegen",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 7,
+        pool: pln2.map((p) => ({ t: p.name, i: p.img, rid: "pl-" + p.name.toLocaleLowerCase("tr") })),
+        results: pln2.map((p) => ({ id: "pl-" + p.name.toLocaleLowerCase("tr"), title: p.name, desc: p.desc || p.fact || "", tags: ["gezegen", "uzay"] })),
+        cover: coverPhoto(pln2[5]?.img || pln2[0].img, "rgba(10,10,12,.45)"),
+        photoCover: true,
+        accent: "#c9f23c",
+        desc: `Sekiz gezegen, tek şampiyon: Dünya mı, Satürn mü? Her tur kazanan bir sonraki rakibiyle kapışır, en son kalan "uzay favorisi" olur.`,
+        minutes: 3
+      });
+    }
+
     return out;
   }
+
   function applyExtras() {
     TESTS.forEach((test) => {
       const meta = EXTRAS.meta && EXTRAS.meta[test.id];
@@ -1351,7 +1427,7 @@
   const TEST_ORDER = [
     "renk-kupasi", "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
     "o-mu-bu-mu-tatli", "o-mu-bu-mu-hamur", "o-mu-bu-mu-hayvan", "o-mu-bu-mu-yol",
-    "o-mu-bu-mu-portre", "hayvan-kupasi", "yer-kupasi", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
+    "o-mu-bu-mu-portre", "hayvan-kupasi", "yer-kupasi", "buyuk-kupa", "portre-kupasi", "gezegen-kupasi", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
     "mutfak-tanima", "tabak-esle",
     "gezegen-sira", "hayvan-sinifi", "turkiye-eserler", "bayrak-esle",
     "wiki-bayraklar", "wiki-bayrak-baskent", "wiki-bayrak-kita", "wiki-yer-ulke",
@@ -1633,7 +1709,7 @@
         ? rows.map((e) => `
             <li>
               <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}">${av(e.n)}<b>${esc((e.n || "").slice(0, 24))}</b></a>
-              <span>${esc(`${e.ti || ""} — ${e.r || ""}`)}</span>
+              <span>${esc(e.c ? `${e.ti || ""} ${e.c} 👑` : `${e.ti || ""} — ${e.r || ""}`)}</span>
               <i>${relDate(e.at)}</i>
             </li>`).join("")
         : `<li class="tahta-empty">Henüz kimse yazmamış — ilk isim sen ol!</li>`;
@@ -2079,6 +2155,7 @@
       /* kupanın şampiyonu = son tura kalan aday */
       const result = test.results.find((r) => r.id === quiz.winner.rid) || test.results[0];
       outcome = { result, score: null, total: quiz.totalRounds, pct: null };
+      outcome.champ = String(quiz.winner.t || "").slice(0, 60);
     } else {
       outcome = computeOutcome(test, quiz.questions, quiz.answers);
     }
@@ -2104,6 +2181,7 @@
       r: outcome.result.title,
       s: outcome.pct,
       sc: typeof outcome.score === "number" ? [outcome.score, outcome.total] : null,
+      c: outcome.champ,
       d: quiz.knockout
         ? quiz.winnerHistory.slice(0, 12).map((w) => ({ q: "kupa turu", u: String(w.t).slice(0, 60) }))
         : buildBoardDetail(test, quiz.questions, quiz.answers),
@@ -2122,6 +2200,8 @@
     if (!test) return renderHome();
     const result = test.results.find((r) => r.id === resultId) || test.results[0];
     const attempt = attemptFor(test, result.id);
+    const last = state.last && state.last.testId === test.id ? state.last : null;
+    const champ = test.knockout && last ? last.champ : null;
     document.title = `${result.title} — ${test.title}`;
     const badgeIcon = test.mode === "trivia" && attempt && attempt.pct >= 70 ? "trophy" : testIcon(test);
 
@@ -2146,6 +2226,7 @@
             <h1>${esc(result.title)}</h1>
             ${scoreHtml}
             <p class="result-desc">${esc(result.desc)}</p>
+            ${champ ? `<p class="result-champion">${icon("trophy")}Şampiyon: <b>${esc(champ)}</b></p>` : ""}
             <div class="tags">
               ${result.tags.map((t) => `<span>${esc(t)}</span>`).join("")}
             </div>
@@ -2275,7 +2356,7 @@
               return `
               <li>
                 <a class="who" href="#/profil/${esc(encodeURIComponent(e.n))}">${av(e.n, "sm")}<b>${esc((e.n || "").slice(0, 24))}</b></a>
-                <span>${esc(test ? e.r : `${e.ti || ""} — ${e.r}`)}</span>
+                <span>${esc(e.c ? `${e.c} 👑` : (test ? e.r : `${e.ti || ""} — ${e.r}`))}</span>
                 <i>${score}${score ? " · " : ""}${relDate(e.at)}</i>
               </li>`;
             }).join("")
@@ -2308,9 +2389,14 @@
             </details>`;
           });
         if (mine.length) {
+          const champs = mine.filter((e) => e.c);
+          const champRows = [...champs.reduce((m, e) => m.set(e.c, (m.get(e.c) || 0) + 1), new Map()).entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6);
           html += `
             <p class="zone-title">herkes böyle seçti</p>
             ${contested.length ? resRows.map(([r, n]) => aggBar(r, n, contested.length)).join("") : `<p class="agg-empty">Sonuç dağılımı için bekleniyor…</p>`}
+            ${champs.length ? `<p class="zone-title">kupa şampiyonları — en son kalanlar</p>${champRows.map(([c, n]) => aggBar(c, n, champs.length)).join("")}` : ""}
             ${qRows.length ? qRows.join("") : `<p class="agg-empty">Soru kırılımı 2 kişiden sonra açılır.</p>`}`;
         } else {
           html += `<p class="zone-title">herkes böyle seçti</p><p class="agg-empty">Bu test için henüz veri yok — beklemeden bir tur at 💫</p>`;
@@ -2380,6 +2466,7 @@
             </div>
             <div class="attempt-sub">
               <span>${esc(e.r || "")}</span>
+              ${e.c ? `<span class="champ-tag">${icon("trophy")} ${esc(e.c)}</span>` : ""}
               ${picks}
             </div>
           </li>`;
@@ -2728,7 +2815,11 @@
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     if (parts[0] === "test" && parts[1]) return renderIntro(byId(parts[1]));
     if (parts[0] === "oyna" && parts[1]) return startQuiz(byId(parts[1]), Number(parts[2]) || 0);
-    if (parts[0] === "sonuc" && parts[1] && parts[2]) return renderResult(byId(parts[1]), parts[2]);
+    if (parts[0] === "sonuc" && parts[1] && parts[2]) {
+      let rid = parts[2];
+      try { rid = decodeURIComponent(parts[2]); } catch (e) { /* bozuk kodlama */ }
+      return renderResult(byId(parts[1]), rid);
+    }
     if (parts[0] === "istatistik") return renderStatsPage(parts[1]);
     if (parts[0] === "profil" && parts[1]) return renderProfile(decodeURIComponent(parts[1]));
     state.quiz = null;
