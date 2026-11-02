@@ -24,6 +24,7 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
   - `trivia`: doğru sayısına göre yüzdelik dilim
   - `knockout` (kupa): seçilen aday sonraki turda kalmaya devam eder, her tur biri elenir ve sonda tek şampiyon kalır
 - **Kupa turnuvası testleri** — Tüm "O mu bu mu" testleri kupa formatında: kazanınca aynı aday sıradaki rakibiyle devam eder, en sonda tek kazanan sonuç olur. Renk kupası, Hayvan kupası, Dünya kupası da aynı sistemde. ← geri düğmesi önceki tura döner
+- **Kocaman sonuç ekranı** — sonuca gelince koca bir fotoğraf bandı: kupada şampiyonun fotoğrafı + adı, diğer testlerde testin kapak görseli; açıklama, etiketler, isim girişi ve PNG kart indirme altında
 - **Anında geri bildirim** — doğru cevap, kısa bilgi ve ilgili Vikipedi bağlantısı; `sonraki →` düğmesi veya Enter ile beklemeden geçilir
 - **PWA** — manifest + service worker ile kurulabilir; uygulama kabuğu ve çözülmüş Wikimedia görselleri çevrimdışı da gelir
 - **Fotoğraflı el yazımı testler** — 18 testin tamamında Wikimedia kapak fotoğrafı; bilgi testlerinde soru görselleri

@@ -1415,6 +1415,87 @@ html[data-theme="dark"] .card { border-color: var(--line); }
   background: var(--surface);
   box-shadow: var(--shadow);
 }
+/* sonuç kartın üstünde kocaman görsel bandı: kupada şampiyon fotoğrafı,
+   diğerlerinde test kapağı */
+.result-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: clamp(300px, 48vw, 440px);
+  padding: clamp(1.5rem, 4.5vw, 2.6rem) clamp(1.3rem, 4vw, 2.4rem);
+  text-align: center;
+  color: #fdfcf8;
+  background-color: var(--paper-2);
+  background-size: cover;
+  background-position: 50% 35%;
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+.result-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(10,10,12,.28) 0%, rgba(10,10,12,.18) 30%, rgba(10,10,12,.68) 68%, rgba(10,10,12,.92) 100%);
+  pointer-events: none;
+}
+.result-hero > *:not(.result-hero-scrim) { position: relative; z-index: 1; }
+.result-hero .result-badge {
+  position: absolute;
+  top: calc(clamp(1.5rem, 4.5vw, 2.6rem) * .4);
+  left: calc(clamp(1.3rem, 4vw, 2.4rem) * .5);
+  margin: 0;
+  background: rgba(10, 10, 12, .55);
+  color: var(--accent, #ffd84b);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, .22);
+}
+.result-hero .result-champ-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .34rem .74rem;
+  margin-bottom: .55rem;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 999px;
+  background: rgba(10, 10, 12, .45);
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #ffd84b;
+  backdrop-filter: blur(4px);
+}
+.result-hero .result-champ-label .ic { width: 13px; height: 13px; }
+.result-hero h1 {
+  max-width: 20ch;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 6.2vw, 4.4rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -.035em;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, .55);
+}
+.result-hero .result-sub {
+  margin: .45rem 0 0;
+  font-family: var(--mono);
+  font-size: .8rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(253, 252, 248, .85);
+}
+.result-hero .score { margin-top: 1.05rem; }
+.result-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 2.6rem) clamp(1.3rem, 4vw, 2.4rem);
+  text-align: center;
+}
 .result-card::before {
   content: "";
   position: absolute;
@@ -1693,8 +1774,9 @@ html[data-theme="dark"] .card { border-color: var(--line); }
   .quiz-foot { font-size: .62rem; }
   .result { padding-top: 1.3rem; }
   .result-card { border-radius: 20px; }
-  .result-inner { padding: 1.45rem 1.1rem 1.7rem; }
-  .result-inner h1 { font-size: clamp(2.1rem, 10vw, 2.9rem); }
+  .result-hero { min-height: clamp(260px, 66vw, 360px); }
+  .result-hero h1 { font-size: clamp(2.1rem, 10.5vw, 3rem); }
+  .result-body { padding: 1.45rem 1.1rem 1.7rem; }
   .result-actions { width: 100%; }
   .result-actions .btn { flex: 1 1 auto; }
   .site-foot {

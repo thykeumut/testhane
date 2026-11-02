@@ -2156,6 +2156,7 @@
       const result = test.results.find((r) => r.id === quiz.winner.rid) || test.results[0];
       outcome = { result, score: null, total: quiz.totalRounds, pct: null };
       outcome.champ = String(quiz.winner.t || "").slice(0, 60);
+      outcome.champImg = quiz.winner.i || null;
     } else {
       outcome = computeOutcome(test, quiz.questions, quiz.answers);
     }
@@ -2202,6 +2203,13 @@
     const attempt = attemptFor(test, result.id);
     const last = state.last && state.last.testId === test.id ? state.last : null;
     const champ = test.knockout && last ? last.champ : null;
+    const champImg = test.knockout && last ? last.champImg : null;
+    /* hero görseli: kupa modunda şampiyon fotoğrafı, diğerlerinde test kapağı */
+    const heroBg = champImg
+      ? coverPhoto(champImg, "rgba(10,10,12,.18)")
+      : test.cover
+        || coverPhoto((test.questions || []).find((q) => q.image)?.image, "rgba(10,10,12,.35)")
+        || "linear-gradient(135deg,#ff5c93 0%,#a98bff 50%,#5b8cff 100%)";
     document.title = `${result.title} — ${test.title}`;
     const badgeIcon = test.mode === "trivia" && attempt && attempt.pct >= 70 ? "trophy" : testIcon(test);
 
@@ -2218,15 +2226,20 @@
 
     view.innerHTML = `
       <section class="result" style="--accent:${test.accent}">
-        <p class="kicker">${esc(test.title)} · sonuç</p>
         <div class="result-card">
-          <div class="result-glow" style="background:${test.accent}"></div>
-          <div class="result-inner">
+          <div class="result-hero" style="background:${heroBg}">
+            <i class="result-hero-scrim"></i>
             <span class="result-badge">${icon(badgeIcon)}</span>
-            <h1>${esc(result.title)}</h1>
+            ${champ ? `
+              <p class="result-champ-label">${icon("trophy")}kupanın şampiyonu</p>
+              <h1>${esc(champ)}</h1>
+              <p class="result-sub">${esc(result.title)}</p>` : `
+              <p class="result-champ-label">${esc(test.title)} · sonuç</p>
+              <h1>${esc(result.title)}</h1>`}
             ${scoreHtml}
+          </div>
+          <div class="result-body">
             <p class="result-desc">${esc(result.desc)}</p>
-            ${champ ? `<p class="result-champion">${icon("trophy")}Şampiyon: <b>${esc(champ)}</b></p>` : ""}
             <div class="tags">
               ${result.tags.map((t) => `<span>${esc(t)}</span>`).join("")}
             </div>
