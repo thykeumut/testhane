@@ -4,9 +4,9 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 
 ## Ne var?
 
-- **60 test** — 18 el yazımı + 34 görselli bilgi/kişilik testi + 8 yemek testi
+- **64 test** — 18 el yazımı + 41 görselli bilgi/kişilik testi + 8 yemek testi (+ kupa turnuvaları)
 - **Ortak tahta**: test sonunda adını yaz; kim ne sonuç aldı görsün (`textdb.dev`, sunucusuz)
-- **~2.560 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
+- **~3.400 soruluk havuz** — istediğin turda 5, 10, 20 veya tüm soruları seç:
   - 200 ülke bayrağı
   - 200 ülkenin başkenti; 192 ülkenin kıtası
   - 83 portre (bilim insanları, yazarlar, ressamlar/müzisyenler, tarihî kişiler)
@@ -95,6 +95,10 @@ Kendini ölç. Kişilik testleri, bilgi yarışmaları, mantık soruları ve Vik
 | Bayrağı görün, başkent bil | bilgi | Wikidata |
 | Bu bayrak hangi kıtadan? | bilgi | Wikidata |
 | Büyük karışık test | bilgi | tüm havuzlar |
+| Bu portre kime ait? | bilgi | Vikipedi |
+| Kıta kupası: şampiyon kıta (turnuvalı) | eğlence | Wikidata |
+| Bu başkent hangi ülkenin? | bilgi | Wikidata |
+| Zeka tuzakları | eğlence | el yazımı |
 
 ## Çalıştırma
 

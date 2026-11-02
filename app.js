@@ -170,7 +170,11 @@
     "turkiye-eserler": "landmark",
     "buyuk-kupa": "crown",
     "portre-kupasi": "users",
-    "gezegen-kupasi": "planet"
+    "gezegen-kupasi": "planet",
+    "portre-kim": "users",
+    "kita-kupasi": "globe",
+    "baskent-esle": "landmark",
+    "zeka-tuzaklari": "spark"
   };
 
   const CAT_ICONS = { "kişilik": "spark", "bilgi": "star", "eğlence": "tv", "ilişki": "heart" };
@@ -206,6 +210,27 @@
 
   function coverPhoto(url, tint = "rgba(10,10,12,.5)") {
     return `linear-gradient(160deg, rgba(10,10,12,.15) 0%, ${tint} 100%), ${bgUrl(url)} center/cover no-repeat`;
+  }
+
+  /* gezegen havuzlarını 10+ soruya çıkaran ortak fakt soruları */
+  const GEZEGEN_FAKTLARI = [
+    ["Jüpiter", "Güneş sisteminin en büyük gezegeni hangisi?"],
+    ["Merkür", "Güneş'e en yakın gezegen hangisi?"],
+    ["Dünya", "Yaşam barındırdığı bilinen tek gezegen hangisi?"],
+    ["Satürn", "Meşhur halkalarıyla öne çıkan gezegen hangisi?"]
+  ];
+  function gezegenFaktQs(planets) {
+    const adlar = planets.map((p) => p.name);
+    const bulun = (ad) => planets.find((p) => p.name === ad) || planets[0];
+    return GEZEGEN_FAKTLARI.map(([ad, q]) => ({
+      q,
+      image: bulun(ad).img,
+      imageFit: "contain",
+      mediaDark: true,
+      fact: `${bulun(ad).name} · ${bulun(ad).desc || bulun(ad).fact || ""}`,
+      wiki: bulun(ad).page,
+      a: choices(ad, adlar)
+    }));
   }
 
   function bands(prefix, kind = "knowledge") {
@@ -412,21 +437,24 @@
         category: "bilgi",
         mode: "trivia",
         dynamic: true,
-        sample: planets.length,
+        sample: Math.min(12, planets.length + 4),
         cover: coverPhoto(planets[4]?.img || planets[0].img, "rgba(10,10,12,.42)"),
         photoCover: true,
         accent: "#b79cff",
-        desc: "Güneş Sistemi'nin sekiz gezegeni. Görselden hangisi olduğunu söyleyebilir misin?",
+        desc: "Güneş Sistemi'nin sekiz gezegeni + bonus sorular: görselden hangisi olduğunu söyle, sonra sıralamanı da kanıtla.",
         minutes: 3,
-        questions: planets.map((p) => ({
-          q: "Bu hangi gezegen?",
-          image: p.img,
-          imageFit: "contain",
-          mediaDark: true,
-          fact: p.fact,
-          wiki: p.page,
-          a: choices(p, planets, (x) => x.name)
-        })),
+        questions: [
+          ...planets.map((p) => ({
+            q: "Bu hangi gezegen?",
+            image: p.img,
+            imageFit: "contain",
+            mediaDark: true,
+            fact: p.fact,
+            wiki: p.page,
+            a: choices(p, planets, (x) => x.name)
+          })),
+          ...gezegenFaktQs(planets)
+        ],
         results: bands("gezegen", "space")
       });
     }
@@ -1054,7 +1082,9 @@
       ["Pembe", "#FF5C93", "Yumuşak kalp", "Sertleşmeden ikna edersin; şefkat ve romantizmin senin cümlen.", ["şefkatli", "romantik"]],
       ["Turkuaz", "#6EE7D8", "Taze rüzgâr", "Serin ve canlısın, deniz kokusu gibi; yerinde durmazsın, akıntı seni taşır.", ["taze", "akıcı"]],
       ["Lacivert", "#22335C", "Gece derinliği", "Az konuşur, çok düşünürsün: gizemli ve derinsin; sabır senin imzan.", ["derin", "gizemli"]],
-      ["Fildişi", "#FDF6E3", "Işık avcısı", "Sade ve şık: beyaz kâğıt gibi; hangi tarza girersen uyum sağlarsın.", ["minimal", "hafif"]]
+      ["Fildişi", "#FDF6E3", "Işık avcısı", "Sade ve şık: beyaz kâğıt gibi; hangi tarza girersen uyum sağlarsın.", ["minimal", "hafif"]],
+      ["Gri", "#9AA1AA", "Gölge asil", "Show yapmazsın ama her ortamda tutunursun: asil sadelik, ölçülü güç.", ["asıl", "sakin"]],
+      ["Bordo", "#7C2F3E", "Şarap gizemi", "Ağır ve asil bir havan var: eskimiş şarap gibi, zamanla derinleşen bir tat senin.", ["asil", "gizemli"]]
     ];
     const renkImg = (hex) => "data:image/svg+xml;utf8," + encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="880"><rect width="640" height="880" fill="${hex}"/><path d="M0 0h640L0 880Z" fill="rgba(0,0,0,.12)"/></svg>`);
@@ -1064,12 +1094,12 @@
       category: "kişilik",
       mode: "personality",
       knockout: true,
-      sample: 6,
+      sample: 10,
       pool: RENK_DATA.map(([t, hex]) => ({ t, i: renkImg(hex), rid: "renk-" + t.toLocaleLowerCase("tr") })),
       results: RENK_DATA.map(([t, , title, desc, tags]) => ({ id: "renk-" + t.toLocaleLowerCase("tr"), title, desc, tags })),
       cover: "linear-gradient(120deg,#FFD84B 0%,#FF4B4B 22%,#B79CFF 48%,#4B9DFF 70%,#49AA64 100%)",
       accent: "#FFD84B",
-      desc: "Kırmızı mı yeşil mi? Kazanan her turda kalmaya devam eder; on renk arasından tek şampiyon rengin çıkar.",
+      desc: "Kırmızı mı yeşil mi? Kazanan her turda kalmaya devam eder; on iki renk arasından tek şampiyon rengin çıkar.",
       minutes: 3
     });
 
@@ -1122,21 +1152,24 @@
         category: "bilgi",
         mode: "trivia",
         dynamic: true,
-        sample: 8,
+        sample: 10,
         cover: coverPhoto(pln[2]?.img || pln[0].img, "rgba(10,10,12,.42)"),
         photoCover: true,
         accent: "#b79cff",
         desc: "Güneş sistemi sıralaması iyi bilinir, fakat görseldeki gezegeni tanımak işi zorlaştırır: kaçıncı sırada?",
         minutes: 3,
-        questions: pln.map((p, i) => ({
-          q: "Fotoğraftaki gezegen Güneş'ten kaçıncı sıradadır?",
-          image: p.img,
-          imageFit: "contain",
-          mediaDark: true,
-          fact: `${p.name} · ${p.desc || p.fact}`,
-          wiki: p.page,
-          a: choices(`${i + 1}.`, siraYer)
-        })),
+        questions: [
+          ...pln.map((p, i) => ({
+            q: "Fotoğraftaki gezegen Güneş'ten kaçıncı sıradadır?",
+            image: p.img,
+            imageFit: "contain",
+            mediaDark: true,
+            fact: `${p.name} · ${p.desc || p.fact}`,
+            wiki: p.page,
+            a: choices(`${i + 1}.`, siraYer)
+          })),
+          ...gezegenFaktQs(pln)
+        ],
         results: bands("gezsira", "space")
       });
     }
@@ -1292,7 +1325,6 @@
     }
 
     /* --- 22-24) yeni kupa turnuvaları --- */
-
     /* 22) Büyük kupa: hayvan, yer ve yemek aynı turnuvada */
     const kupaAdaylar = [
       ...hayvanKoleksiyon.map((a) => ({ t: a.name, i: a.img, rid: dominantKey(ANIMAL_W[a.name]) })),
@@ -1363,6 +1395,117 @@
       });
     }
 
+    /* --- 25-28) takviye: yeni konseptler --- */
+
+    /* 25) Bu portre kime ait?: isim tanıma meydanı */
+    const portuKim = WIKI.people.filter((p) => p.img);
+    if (portuKim.length >= 12) {
+      const isimHavuz = portuKim.map((p) => p.name);
+      out.push({
+        id: "portre-kim",
+        title: "Bu portre kime ait?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: coverPhoto(portuKim[3].img, "rgba(10,10,12,.44)"),
+        photoCover: true,
+        accent: "#c9f23c",
+        desc: `${portuKim.length} portre, yüzyılların yüzleri: bilim insanı, yazar, ressam, komutan. Fotoğrafı gör, dört isimden doğru olanı seç. Hafızanın gerçek sınavı.`,
+        minutes: 4,
+        questions: portuKim.map((p) => ({
+          q: "Bu portre kime ait?",
+          image: p.img,
+          imageFit: "contain",
+          mediaDark: true,
+          fact: `${p.name}${p.field ? " · " + FIELD_LABELS[p.field] : ""}${p.desc ? " — " + p.desc : ""}`,
+          wiki: p.page,
+          a: choices(p.name, isimHavuz)
+        })),
+        results: bands("portrekim", "visual")
+      });
+    }
+
+    /* 26) Kıta kupası: bayraklar elenir, kıta şampiyonu kalır */
+    const kitaAday = WIKI.countries.filter((c) => c.flag && canonKita.has(c.continent));
+    if (kitaAday.length >= 24) {
+      out.push({
+        id: "kita-kupasi",
+        title: "Kıta kupası: şampiyon kıta",
+        category: "eğlence",
+        mode: "personality",
+        knockout: true,
+        sample: 10,
+        pool: kitaAday.map((c) => ({ t: c.name, i: c.flag, rid: c.continent })),
+        results: [
+          { id: "Asya", title: "Doğunun gücü", desc: "Kupayı Asya kaldırdı: baharatlı pazarlar, dev şehirler, binlerce yıllık imparatorluklar. Pusulan artık doğuya dönük.", tags: ["asya", "güç"] },
+          { id: "Avrupa", title: "Katedral gölgesi", desc: "Şampiyon Avrupa'dan çıktı: kalem, tren sisleri, kale duvarları. Küçük ama yoğun bir kıta finalde direndi.", tags: ["avrupa", "tarih"] },
+          { id: "Afrika", title: "Savanna ritmi", desc: "Zirve Afrika'ya uzandı: davul sesi, berrak gün doğumu, masumiyetten uzak bir güzellik. Toprağın sesi gür çıktı.", tags: ["afrika", "coğrafya"] },
+          { id: "Kuzey Amerika", title: "Gökdelen gölgesi", desc: "Kupa yeni dünyada: kanyonlar, caddeler, yol filmleri. Uçsuz bucaksız bir kıtanın rüzgârını hissediyorsun.", tags: ["kuzey", "birleşik"] },
+          { id: "Güney Amerika", title: "Amazon nabzı", desc: "Final güneyden döndü: orman ritmi, futbol, tango. Renkli ve hiç durmayan bir kıta kupayı götürdü.", tags: ["güney", "orman"] },
+          { id: "Okyanusya", title: "Ada ferahlığı", desc: "Son kalan Okyanusya oldu: turkuaz okyanus, ada rüzgârı, güneşin en sar hâli. Şampiyonluk bambaşka bir hava.", tags: ["okyanusya", "ada"] }
+        ],
+        cover: coverPhoto(kitaAday[2]?.flag || kitaAday[0].flag, "rgba(10,10,12,.46)"),
+        photoCover: true,
+        accent: "#ffb14c",
+        desc: `${kitaAday.length} bayrak, altı kıta: her tur kazanan bayrak devam eder, taşımış olduğu kıta turu geçer. En son ayakta kalan kıta senin coğrafyan.`,
+        minutes: 4
+      });
+    }
+
+    /* 27) Bu başkent hangi ülkenin?: ters yön coğrafya */
+    const bastan = WIKI.countries.filter((c) => c.capital);
+    if (bastan.length >= 24) {
+      const ulkeAd = [...new Set(bastan.map((c) => c.name))];
+      out.push({
+        id: "baskent-esle",
+        title: "Bu başkent hangi ülkenin?",
+        category: "bilgi",
+        mode: "trivia",
+        dynamic: true,
+        sample: 10,
+        cover: "radial-gradient(circle at 30% 25%, #2b3550, #151827)",
+        accent: "#4b9dff",
+        desc: `Görsel yok, sadece bellek: ${bastan.length} başkent ismi, dört ülke şıkkı. Ülke→başkent ezberini ters çalıştır, bakalım elle tutacak misin.`,
+        minutes: 3,
+        questions: bastan.map((c) => ({
+          q: `${c.capital} hangi ülkenin başkentidir?`,
+          fact: `${c.name} · Başkent: ${c.capital}`,
+          wiki: c.page,
+          a: choices(c.name, ulkeAd)
+        })),
+        results: bands("bastesle", "knowledge")
+      });
+    }
+
+    /* 28) Zeka tuzakları: hızlı düşün, tuzak yutma */
+    out.push({
+      id: "zeka-tuzaklari",
+      title: "Zeka tuzakları",
+      category: "eğlence",
+      mode: "trivia",
+      dynamic: true,
+      sample: 10,
+      accent: "#ff8a4c",
+      desc: "Bilgi değil, refleks: klasik tuzak soruları. İlk aklına gelen cevabı verme, tuzak orada saklı.",
+      minutes: 3,
+      questions: [
+        { q: "5 makine 5 parçayı 5 dakikada yapıyorsa, 100 makine 100 parçayı kaç dakikada yapar?", a: shuffle([{ t: "5 dakika", c: true }, { t: "100 dakika" }, { t: "20 dakika" }, { t: "50 dakika" }]), fact: "Makineler paralel çalışır: 1 makine 1 parçayı 5 dakikada yapıyor; 100 makine de 100 parçayı 5 dakikada yapar." },
+        { q: "Babamın oğlu ama benim kardeşim değilse o kim?", a: shuffle([{ t: "Kendim", c: true }, { t: "Kuzenim" }, { t: "Amcam" }, { t: "Çocuğum" }]), fact: "\"Babamın oğlu\" benim kendimim; kendim kardeşim olamam." },
+        { q: "7 kilo pamuk mu, 7 kilo taş mı daha ağır?", a: shuffle([{ t: "İkisi de aynı", c: true }, { t: "Taş" }, { t: "Pamuk" }, { t: "Hacme göre değişir" }]), fact: "İkisi de 7 kilo; tartıda fark etmez, hacim farkı bambaşka konu." },
+        { q: "Sabah 4 ayak, öğlen 2 ayak, akşam 3 ayak yürüyen varlık?", a: shuffle([{ t: "İnsan", c: true }, { t: "Deve" }, { t: "Ayı" }, { t: "Fare" }]), fact: "Sfenks'in bilmecesi: bebek emekler (4), yetişkin yürür (2), yaşlılıkta baston (3)." },
+        { q: "Horoz ne zaman yumurtlar?", a: shuffle([{ t: "Hiç yumurtlamaz", c: true }, { t: "Sabah" }, { t: "Gece" }, { t: "Baharda" }]), fact: "Horoz yumurtlamaz; sorunun tuzağı varsayımda saklı." },
+        { q: "Doktor 3 hap verdi, her hapı yarım saat arayla alacaksın. Son hapı içince baştan itibaren kaç saat geçmiş olur?", a: shuffle([{ t: "1 saat", c: true }, { t: "1.5 saat" }, { t: "2 saat" }, { t: "Yarım saat" }]), fact: "Haplar 0., 30. ve 60. dakikada: toplam 1 saat." },
+        { q: "Ağaçta 3 kuş var; avcı birini vurdu. Ağaçta kaç kuş kalır?", a: shuffle([{ t: "Hiç kalmaz", c: true }, { t: "2" }, { t: "1" }, { t: "3" }]), fact: "Tüfek sesini duyan diğer kuşlar da uçar; ağaçta kuş kalmaz." },
+        { q: "6 çocuğa tabaktaki 6 portakalı, her çocuğa bir portakal düşecek şekilde nasıl paylaştırırsın?", a: shuffle([{ t: "Son çocuk tabakla birlikte alır", c: true }, { t: "Olmaz, birine ikiverir" }, { t: "Bir portakalı ikiye bölerek" }, { t: "İki çocuk portakal almaz" }]), fact: "Son çocuk portakalı tabakla birlikte alır; herkes birer portakal almış olur." },
+        { q: "Dünyanın en yüksek dağı hangisidir?", a: shuffle([{ t: "Everest", c: true }, { t: "Ağrı" }, { t: "Kilimanjaro" }, { t: "Mont Blanc" }]), fact: "Everest, deniz seviyesinden yaklaşık 8.849 metre yükseklikte." },
+        { q: "Türkiye'de kaç il vardır?", a: shuffle([{ t: "81", c: true }, { t: "80" }, { t: "78" }, { t: "83" }]), fact: "Türkiye 81 ili ile 7 coğrafyanın kapısını açıyor." },
+        { q: "29 Şubat hangi durumdaki yıllarda olur?", a: shuffle([{ t: "4'e bölünen yıllarda", c: true }, { t: "100'e bölünen her yılda" }, { t: "7'ye bölünen yıllarda" }, { t: "Her beş yılda bir" }]), fact: "Artık yıl 4'e bölünen yıllarda gelir; yüzyıl yıllarında yalnızca 400'e bölünenler artıktır." },
+        { q: "Ay'a ilk kez ayak basan astronot kimdir?", a: shuffle([{ t: "Neil Armstrong", c: true }, { t: "Yuri Gagarin" }, { t: "Buzz Aldrin" }, { t: "Michael Collins" }]), fact: "Neil Armstrong 1969'da Ay'a ilk ayak basan insan oldu; Buzz Aldrin hemen ardından." }
+      ],
+      results: bands("tuzak", "knowledge")
+    });
+
     return out;
   }
 
@@ -1428,6 +1571,7 @@
     "renk-kupasi", "o-mu-bu-mu-turk", "o-mu-bu-mu-lezzet", "o-mu-bu-mu-sokak", "o-mu-bu-mu-sofra",
     "o-mu-bu-mu-tatli", "o-mu-bu-mu-hamur", "o-mu-bu-mu-hayvan", "o-mu-bu-mu-yol",
     "o-mu-bu-mu-portre", "hayvan-kupasi", "yer-kupasi", "buyuk-kupa", "portre-kupasi", "gezegen-kupasi", "hayvan-adresi", "gorsel-karisik", "tatli-mi-tuzlu",
+    "portre-kim", "kita-kupasi", "baskent-esle", "zeka-tuzaklari",
     "mutfak-tanima", "tabak-esle",
     "gezegen-sira", "hayvan-sinifi", "turkiye-eserler", "bayrak-esle",
     "wiki-bayraklar", "wiki-bayrak-baskent", "wiki-bayrak-kita", "wiki-yer-ulke",
